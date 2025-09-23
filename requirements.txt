@@ -1,5 +1,5 @@
 azure-identity
-openai
+openai>=1.108.1
 python-dotenv
 pydantic
 rich
