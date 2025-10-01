@@ -8,7 +8,7 @@ import azure.identity
 from autogen_agentchat.agents import AssistantAgent
 from autogen_agentchat.conditions import TextMessageTermination
 from autogen_agentchat.teams import RoundRobinGroupChat
-from autogen_ext.models.openai import AzureOpenAIChatCompletionClient, OpenAIChatCompletionClient
+from autogen_ext.models.openai import OpenAIChatCompletionClient
 from dotenv import load_dotenv
 from rich.logging import RichHandler
 
@@ -26,7 +26,7 @@ if API_HOST == "github":
     client = OpenAIChatCompletionClient(model=os.getenv("GITHUB_MODEL", "gpt-4o"), api_key=os.environ["GITHUB_TOKEN"], base_url="https://models.inference.ai.azure.com", parallel_tool_calls=False)
 elif API_HOST == "azure":
     token_provider = azure.identity.get_bearer_token_provider(azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default")
-    client = AzureOpenAIChatCompletionClient(model=os.environ["AZURE_OPENAI_CHAT_MODEL"], api_version=os.environ["AZURE_OPENAI_VERSION"], azure_deployment=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"], azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"], azure_ad_token_provider=token_provider, parallel_tool_calls=False)
+    client = OpenAIChatCompletionClient(model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"], api_key=token_provider, base_url=os.environ["AZURE_OPENAI_ENDPOINT"], parallel_tool_calls=False)
 
 
 def get_weather(city: str) -> str:
