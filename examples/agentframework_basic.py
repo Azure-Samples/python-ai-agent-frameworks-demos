@@ -1,6 +1,7 @@
 import asyncio
 import os
 
+from agent_framework import ChatAgent
 from agent_framework.azure import AzureOpenAIChatClient
 from agent_framework.openai import OpenAIChatClient
 from azure.identity import DefaultAzureCredential
@@ -34,7 +35,10 @@ else:
         api_key=os.environ.get("OPENAI_API_KEY"), model_id=os.environ.get("OPENAI_MODEL", "gpt-4o")
     )
 
-agent = client.create_agent(instructions="You're an informational agent. Answer questions cheerfully.")
+agent = ChatAgent(
+    chat_client=client,
+    instructions="You're an informational agent. Answer questions cheerfully."
+)
 
 
 async def main():

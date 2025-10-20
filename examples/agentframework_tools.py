@@ -5,6 +5,7 @@ import random
 from datetime import datetime
 from typing import Annotated
 
+from agent_framework import ChatAgent
 from agent_framework.azure import AzureOpenAIChatClient
 from agent_framework.openai import OpenAIChatClient
 from azure.identity import DefaultAzureCredential
@@ -81,7 +82,8 @@ def get_current_date() -> str:
     return datetime.now().strftime("%Y-%m-%d")
 
 
-agent = client.create_agent(
+agent = ChatAgent(
+    chat_client=client,
     instructions=(
         "You help users plan their weekends and choose the best activities for the given weather. "
         "If an activity would be unpleasant in weather, don't suggest it. Include date of the weekend in response."

@@ -5,6 +5,7 @@ import random
 from datetime import datetime
 from typing import Annotated
 
+from agent_framework import ChatAgent
 from agent_framework.azure import AzureOpenAIChatClient
 from agent_framework.openai import OpenAIChatClient
 from azure.identity import DefaultAzureCredential
@@ -80,7 +81,8 @@ def get_current_date() -> str:
     return datetime.now().strftime("%Y-%m-%d")
 
 
-weekend_agent = client.create_agent(
+weekend_agent = ChatAgent(
+    chat_client=client,
     instructions=(
         "You help users plan their weekends and choose the best activities for the given weather. "
         "If an activity would be unpleasant in the weather, don't suggest it. "
@@ -144,7 +146,8 @@ def check_fridge() -> list[str]:
     return items
 
 
-meal_agent = client.create_agent(
+meal_agent = ChatAgent(
+    chat_client=client,
     instructions=(
         "You help users plan meals and choose the best recipes. "
         "Include the ingredients and cooking instructions in your response. "
@@ -165,7 +168,8 @@ async def plan_meal(query: str) -> str:
 # Supervisor agent orchestrating sub-agents
 # ----------------------------------------------------------------------------------
 
-supervisor_agent = client.create_agent(
+supervisor_agent = ChatAgent(
+    chat_client=client,
     instructions=(
         "You are a supervisor managing two specialist agents: a weekend planning agent and a meal planning agent. "
         "Break down the user's request, decide which specialist (or both) to call via the available tools, "

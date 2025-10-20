@@ -9,15 +9,17 @@
     },
     "customizations": {
         "vscode": {
+            "settings": {
+                "python.defaultInterpreterPath": "/usr/local/bin/python",
+                "remote.autoForwardPorts": false,
+                "python.createEnvironment.trigger": "off",
+                "python.analysis.typeCheckingMode": "off"
+            },
             "extensions": [
                 "ms-python.python",
                 "ms-azuretools.vscode-bicep"
-            ],
-            "python.defaultInterpreterPath": "/usr/local/bin/python"
+            ]
         }
     },
-    "remoteUser": "vscode",
-    "hostRequirements": {
-        "memory": "8gb"
-    }
+    "remoteUser": "vscode"
 }
