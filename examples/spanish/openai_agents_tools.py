@@ -31,44 +31,38 @@ elif API_HOST == "azure":
         azure_ad_token_provider=token_provider,
     )
     MODEL_NAME = os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"]
+elif API_HOST == "ollama":
+    client = openai.AsyncOpenAI(base_url=os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1"), api_key="none")
+    MODEL_NAME = os.environ["OLLAMA_MODEL"]
 
 
 @function_tool
 def get_weather(city: str) -> str:
     logger.info(f"Obteniendo el clima para {city}")
     if random.random() < 0.05:
-        return {
-            "city": city,
-            "temperature": 72,
-            "description": "Soleado",
-        }
+        weather = f"El clima en {city}: 72°F, Soleado"
     else:
-        return {
-            "city": city,
-            "temperature": 60,
-            "description": "Lluvioso",
-        }
+        weather = f"El clima en {city}: 60°F, Lluvioso"
+    return weather
 
 
 @function_tool
-def get_activities(city: str, date: str) -> list:
+def get_activities(city: str, date: str) -> str:
     logger.info(f"Obteniendo actividades para {city} el {date}")
-    return [
-        {"name": "Senderismo", "location": city},
-        {"name": "Playa", "location": city},
-        {"name": "Museo", "location": city},
-    ]
+    activities_text = f"Actividades disponibles en {city} para {date}: Senderismo, Playa, Museo"
+    return activities_text
 
 
 @function_tool
 def get_current_date() -> str:
+    """Obtiene la fecha actual y la devuelve como string en formato YYYY-MM-DD."""
     logger.info("Obteniendo fecha actual")
     return datetime.now().strftime("%Y-%m-%d")
 
 
 agent = Agent(
     name="Planificador de Finde",
-    instructions="Ayudas a los usuarios a planificar sus fines de semana y elegir las mejores actividades según el clima. Si una actividad sería desagradable con el clima actual, no la sugieras. Incluye la fecha del fin de semana en tu respuesta.",
+    instructions="Ayudas a los usuarios a planificar sus fines de semana y elegir las mejores actividades según el clima. Si una actividad sería desagradable con el clima actual, no la sugieras.",
     tools=[get_weather, get_activities, get_current_date],
     model=OpenAIChatCompletionsModel(model=MODEL_NAME, openai_client=client),
 )
