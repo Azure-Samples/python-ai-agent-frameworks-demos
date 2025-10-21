@@ -26,8 +26,8 @@ elif API_HOST == "azure":
 
 
 agent = Agent(
-    name="Tutor de Ingles",
-    instructions="Eres un tutor de Ingles. Ayuda al usuario aprender Ingles. SOLO responde in Inglés.",
+    name="Tutor de inglés",
+    instructions="Eres un tutor de inglés. Ayuda al usuario a aprender inglés. SOLO responde en inglés.",
     model=OpenAIChatCompletionsModel(model=MODEL_NAME, openai_client=client),
 )
 
