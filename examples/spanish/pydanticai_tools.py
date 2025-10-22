@@ -24,7 +24,9 @@ if API_HOST == "github":
     client = AsyncOpenAI(api_key=os.environ["GITHUB_TOKEN"], base_url="https://models.inference.ai.azure.com")
     model = OpenAIChatModel(os.getenv("GITHUB_MODEL", "gpt-4o"), provider=OpenAIProvider(openai_client=client))
 elif API_HOST == "azure":
-    token_provider = azure.identity.get_bearer_token_provider(azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default")
+    token_provider = azure.identity.get_bearer_token_provider(
+        azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"
+    )
     client = AsyncAzureOpenAI(
         api_version=os.environ["AZURE_OPENAI_VERSION"],
         azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
@@ -72,9 +74,11 @@ def obtener_fecha_actual() -> str:
 
 agent = Agent(
     model,
-    system_prompt=("Ayuda al usuario a planificar su fin de semana y a elegir las "
-    "mejores actividades según el clima proporcionado. No sugieras actividades que puedan "
-    "resultar desagradables con ese clima. Incluye la fecha del fin de semana en tu respuesta."),
+    system_prompt=(
+        "Ayuda al usuario a planificar su fin de semana y a elegir las "
+        "mejores actividades según el clima proporcionado. No sugieras actividades que puedan "
+        "resultar desagradables con ese clima. Incluye la fecha del fin de semana en tu respuesta."
+    ),
     tools=[obtener_clima, obtener_actividades, obtener_fecha_actual],
 )
 

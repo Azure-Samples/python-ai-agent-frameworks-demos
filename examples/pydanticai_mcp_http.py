@@ -25,7 +25,9 @@ if API_HOST == "github":
     client = AsyncOpenAI(api_key=os.environ["GITHUB_TOKEN"], base_url="https://models.inference.ai.azure.com")
     model = OpenAIChatModel(os.getenv("GITHUB_MODEL", "gpt-4o"), provider=OpenAIProvider(openai_client=client))
 elif API_HOST == "azure":
-    token_provider = azure.identity.get_bearer_token_provider(azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default")
+    token_provider = azure.identity.get_bearer_token_provider(
+        azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"
+    )
     client = AsyncAzureOpenAI(
         api_version=os.environ["AZURE_OPENAI_VERSION"],
         azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
@@ -38,11 +40,18 @@ elif API_HOST == "ollama":
 
 server = MCPServerStreamableHTTP(url="http://localhost:8000/mcp")
 
-agent: Agent[None, str] = Agent(model, system_prompt="You are a travel planning agent. You can help users find hotels.", output_type=str, toolsets=[server])
+agent: Agent[None, str] = Agent(
+    model,
+    system_prompt="You are a travel planning agent. You can help users find hotels.",
+    output_type=str,
+    toolsets=[server],
+)
 
 
 async def main():
-    result = await agent.run("Find me a hotel in San Francisco for 2 nights starting from 2024-01-01. I need a hotel with free WiFi and a pool.")
+    result = await agent.run(
+        "Find me a hotel in San Francisco for 2 nights starting from 2024-01-01. I need a hotel with free WiFi and a pool."
+    )
     print(result.output)
 
 

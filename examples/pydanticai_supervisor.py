@@ -27,13 +27,17 @@ if API_HOST == "github":
     client = AsyncOpenAI(api_key=os.environ["GITHUB_TOKEN"], base_url="https://models.inference.ai.azure.com")
     base_model = OpenAIChatModel(os.getenv("GITHUB_MODEL", "gpt-4o"), provider=OpenAIProvider(openai_client=client))
 elif API_HOST == "azure":
-    token_provider = azure.identity.get_bearer_token_provider(azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default")
+    token_provider = azure.identity.get_bearer_token_provider(
+        azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"
+    )
     client = AsyncAzureOpenAI(
         api_version=os.environ["AZURE_OPENAI_VERSION"],
         azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
         azure_ad_token_provider=token_provider,
     )
-    base_model = OpenAIChatModel(os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"], provider=OpenAIProvider(openai_client=client))
+    base_model = OpenAIChatModel(
+        os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"], provider=OpenAIProvider(openai_client=client)
+    )
 elif API_HOST == "ollama":
     client = AsyncOpenAI(base_url=os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1"), api_key="none")
     base_model = OpenAIChatModel(os.environ["OLLAMA_MODEL"], provider=OpenAIProvider(openai_client=client))
@@ -64,13 +68,19 @@ async def get_weather(ctx: RunContext[None], city: str) -> Weather:
 spanish_weather_agent = Agent(
     base_model,
     tools=[get_weather],
-    system_prompt=("Eres un agente del clima. Solo respondes en español con información del tiempo para la ciudad pedida. " "Usa la herramienta 'get_weather' para obtener datos. Devuelve una respuesta breve y clara."),
+    system_prompt=(
+        "Eres un agente del clima. Solo respondes en español con información del tiempo para la ciudad pedida. "
+        "Usa la herramienta 'get_weather' para obtener datos. Devuelve una respuesta breve y clara."
+    ),
 )
 
 english_weather_agent = Agent(
     base_model,
     tools=[get_weather],
-    system_prompt=("You are a weather agent. You only respond in English with weather info for the requested city. " "Use the 'get_weather' tool to fetch data. Keep responses concise."),
+    system_prompt=(
+        "You are a weather agent. You only respond in English with weather info for the requested city. "
+        "Use the 'get_weather' tool to fetch data. Keep responses concise."
+    ),
 )
 
 
@@ -78,7 +88,11 @@ english_weather_agent = Agent(
 triage_agent = Agent(
     base_model,
     output_type=TriageResult,
-    system_prompt=("You are a triage agent. Determine whether the user's request is primarily in Spanish or English. " "Return language (either 'spanish' or 'english') and reason (a brief explanation of your choice) " "Only choose 'spanish' if the request is entirely in Spanish; otherwise choose 'english'."),
+    system_prompt=(
+        "You are a triage agent. Determine whether the user's request is primarily in Spanish or English. "
+        "Return language (either 'spanish' or 'english') and reason (a brief explanation of your choice) "
+        "Only choose 'spanish' if the request is entirely in Spanish; otherwise choose 'english'."
+    ),
 )
 
 

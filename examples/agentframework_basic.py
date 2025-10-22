@@ -35,10 +35,7 @@ else:
         api_key=os.environ.get("OPENAI_API_KEY"), model_id=os.environ.get("OPENAI_MODEL", "gpt-4o")
     )
 
-agent = ChatAgent(
-    chat_client=client,
-    instructions="You're an informational agent. Answer questions cheerfully."
-)
+agent = ChatAgent(chat_client=client, instructions="You're an informational agent. Answer questions cheerfully.")
 
 
 async def main():
