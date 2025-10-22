@@ -6,9 +6,9 @@ from datetime import datetime
 from typing import Annotated
 
 from agent_framework import ChatAgent
-from agent_framework.azure import AzureOpenAIChatClient
 from agent_framework.openai import OpenAIChatClient
 from azure.identity import DefaultAzureCredential
+from azure.identity.aio import get_bearer_token_provider
 from dotenv import load_dotenv
 from pydantic import Field
 from rich import print
@@ -22,11 +22,10 @@ load_dotenv(override=True)
 API_HOST = os.getenv("API_HOST", "github")
 
 if API_HOST == "azure":
-    client = AzureOpenAIChatClient(
-        credential=DefaultAzureCredential(),
-        deployment_name=os.environ.get("AZURE_OPENAI_CHAT_DEPLOYMENT"),
-        endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT"),
-        api_version=os.environ.get("AZURE_OPENAI_VERSION"),
+    client = OpenAIChatClient(
+        base_url=os.environ.get("AZURE_OPENAI_ENDPOINT") + "/openai/v1/",
+        api_key=get_bearer_token_provider(DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"),
+        model_id=os.environ.get("AZURE_OPENAI_CHAT_DEPLOYMENT"),
     )
 elif API_HOST == "github":
     client = OpenAIChatClient(
@@ -41,9 +40,7 @@ elif API_HOST == "ollama":
         model_id=os.environ.get("OLLAMA_MODEL", "llama3.1:latest"),
     )
 else:
-    client = OpenAIChatClient(
-        api_key=os.environ.get("OPENAI_API_KEY"), model_id=os.environ.get("OPENAI_MODEL", "gpt-4o")
-    )
+    client = OpenAIChatClient(api_key=os.environ.get("OPENAI_API_KEY"), model_id=os.environ.get("OPENAI_MODEL", "gpt-4o"))
 
 
 def get_weather(
@@ -84,11 +81,7 @@ def get_current_date() -> str:
 
 agent = ChatAgent(
     chat_client=client,
-    instructions=(
-        "Ayudas a las personas a planear su fin de semana y elegir las mejores actividades según el clima. "
-        "Si una actividad sería desagradable con el clima previsto, no la sugieras. "
-        "Incluye la fecha del fin de semana en tu respuesta."
-    ),
+    instructions=("Ayudas a las personas a planear su fin de semana y elegir las mejores actividades según el clima. " "Si una actividad sería desagradable con el clima previsto, no la sugieras. " "Incluye la fecha del fin de semana en tu respuesta."),
     tools=[get_weather, get_activities, get_current_date],
 )
 

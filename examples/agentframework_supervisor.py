@@ -6,9 +6,9 @@ from datetime import datetime
 from typing import Annotated
 
 from agent_framework import ChatAgent
-from agent_framework.azure import AzureOpenAIChatClient
 from agent_framework.openai import OpenAIChatClient
 from azure.identity import DefaultAzureCredential
+from azure.identity.aio import get_bearer_token_provider
 from dotenv import load_dotenv
 from pydantic import Field
 from rich import print
@@ -22,11 +22,10 @@ load_dotenv(override=True)
 API_HOST = os.getenv("API_HOST", "github")
 
 if API_HOST == "azure":
-    client = AzureOpenAIChatClient(
-        credential=DefaultAzureCredential(),
-        deployment_name=os.environ.get("AZURE_OPENAI_CHAT_DEPLOYMENT"),
-        endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT"),
-        api_version=os.environ.get("AZURE_OPENAI_VERSION"),
+    client = OpenAIChatClient(
+        base_url=os.environ.get("AZURE_OPENAI_ENDPOINT") + "/openai/v1/",
+        api_key=get_bearer_token_provider(DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"),
+        model_id=os.environ.get("AZURE_OPENAI_CHAT_DEPLOYMENT"),
     )
 elif API_HOST == "github":
     client = OpenAIChatClient(
@@ -41,9 +40,7 @@ elif API_HOST == "ollama":
         model_id=os.environ.get("OLLAMA_MODEL", "llama3.1:latest"),
     )
 else:
-    client = OpenAIChatClient(
-        api_key=os.environ.get("OPENAI_API_KEY"), model_id=os.environ.get("OPENAI_MODEL", "gpt-4o")
-    )
+    client = OpenAIChatClient(api_key=os.environ.get("OPENAI_API_KEY"), model_id=os.environ.get("OPENAI_MODEL", "gpt-4o"))
 
 # ----------------------------------------------------------------------------------
 # Sub-agent 1 tools: weekend planning
@@ -83,11 +80,7 @@ def get_current_date() -> str:
 
 weekend_agent = ChatAgent(
     chat_client=client,
-    instructions=(
-        "You help users plan their weekends and choose the best activities for the given weather. "
-        "If an activity would be unpleasant in the weather, don't suggest it. "
-        "Include the date of the weekend in your response."
-    ),
+    instructions=("You help users plan their weekends and choose the best activities for the given weather. " "If an activity would be unpleasant in the weather, don't suggest it. " "Include the date of the weekend in your response."),
     tools=[get_weather, get_activities, get_current_date],
 )
 
@@ -148,11 +141,7 @@ def check_fridge() -> list[str]:
 
 meal_agent = ChatAgent(
     chat_client=client,
-    instructions=(
-        "You help users plan meals and choose the best recipes. "
-        "Include the ingredients and cooking instructions in your response. "
-        "Indicate what the user needs to buy from the store when their fridge is missing ingredients."
-    ),
+    instructions=("You help users plan meals and choose the best recipes. " "Include the ingredients and cooking instructions in your response. " "Indicate what the user needs to buy from the store when their fridge is missing ingredients."),
     tools=[find_recipes, check_fridge],
 )
 
@@ -170,11 +159,7 @@ async def plan_meal(query: str) -> str:
 
 supervisor_agent = ChatAgent(
     chat_client=client,
-    instructions=(
-        "You are a supervisor managing two specialist agents: a weekend planning agent and a meal planning agent. "
-        "Break down the user's request, decide which specialist (or both) to call via the available tools, "
-        "and then synthesize a final helpful answer. When invoking a tool, provide clear, concise queries."
-    ),
+    instructions=("You are a supervisor managing two specialist agents: a weekend planning agent and a meal planning agent. " "Break down the user's request, decide which specialist (or both) to call via the available tools, " "and then synthesize a final helpful answer. When invoking a tool, provide clear, concise queries."),
     tools=[plan_weekend, plan_meal],
 )
 

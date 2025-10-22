@@ -4,9 +4,10 @@ import os
 import random
 from datetime import datetime
 
-import azure.identity
+from azure.identity import DefaultAzureCredential
+from azure.identity.aio import get_bearer_token_provider
 from dotenv import load_dotenv
-from openai import AsyncAzureOpenAI, AsyncOpenAI
+from openai import AsyncOpenAI
 from pydantic_ai import Agent
 from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
@@ -24,11 +25,10 @@ if API_HOST == "github":
     client = AsyncOpenAI(api_key=os.environ["GITHUB_TOKEN"], base_url="https://models.inference.ai.azure.com")
     model = OpenAIChatModel(os.getenv("GITHUB_MODEL", "gpt-4o"), provider=OpenAIProvider(openai_client=client))
 elif API_HOST == "azure":
-    token_provider = azure.identity.get_bearer_token_provider(azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default")
-    client = AsyncAzureOpenAI(
-        api_version=os.environ["AZURE_OPENAI_VERSION"],
-        azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
-        azure_ad_token_provider=token_provider,
+    token_provider = get_bearer_token_provider(DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default")
+    client = AsyncOpenAI(
+        base_url=os.environ["AZURE_OPENAI_ENDPOINT"] + "/openai/v1",
+        api_key=token_provider,
     )
     model = OpenAIChatModel(os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"], provider=OpenAIProvider(openai_client=client))
 elif API_HOST == "ollama":
@@ -72,9 +72,7 @@ def obtener_fecha_actual() -> str:
 
 agent = Agent(
     model,
-    system_prompt=("Ayuda al usuario a planificar su fin de semana y a elegir las "
-    "mejores actividades según el clima proporcionado. No sugieras actividades que puedan "
-    "resultar desagradables con ese clima. Incluye la fecha del fin de semana en tu respuesta."),
+    system_prompt=("Ayuda al usuario a planificar su fin de semana y a elegir las " "mejores actividades según el clima proporcionado. No sugieras actividades que puedan " "resultar desagradables con ese clima. Incluye la fecha del fin de semana en tu respuesta."),
     tools=[obtener_clima, obtener_actividades, obtener_fecha_actual],
 )
 
