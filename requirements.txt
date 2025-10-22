@@ -11,7 +11,7 @@ azure-ai-inference==1.0.0b9
 openai-agents
 semantic-kernel
 langgraph
-langchain==1.0.0a5
+langchain==1.0.2
 langchain_openai
 pydantic-ai==1.0.8
 llama-index

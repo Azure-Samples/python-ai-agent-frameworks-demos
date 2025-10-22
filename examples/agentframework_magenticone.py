@@ -7,6 +7,7 @@ import os
 from agent_framework import (
     ChatAgent,
     MagenticAgentDeltaEvent,
+    MagenticAgentMessageEvent,
     MagenticBuilder,
     MagenticCallbackEvent,
     MagenticCallbackMode,
@@ -17,6 +18,10 @@ from agent_framework.azure import AzureOpenAIChatClient
 from agent_framework.openai import OpenAIChatClient
 from azure.identity import DefaultAzureCredential
 from dotenv import load_dotenv
+from rich.console import Console
+from rich.markdown import Markdown
+from rich.panel import Panel
+from rich.text import Text
 
 # Setup the client to use either Azure OpenAI or GitHub Models
 load_dotenv(override=True)
@@ -45,6 +50,9 @@ else:
     client = OpenAIChatClient(
         api_key=os.environ.get("OPENAI_API_KEY"), model_id=os.environ.get("OPENAI_MODEL", "gpt-4o")
     )
+
+# Initialize rich console
+console = Console()
 
 # Create the agents
 local_agent = ChatAgent(
@@ -81,12 +89,27 @@ travel_summary_agent = ChatAgent(
 )
 
 
-# Event callback for streaming output
+# Event callback for streaming output with rich formatting
 async def on_event(event: MagenticCallbackEvent) -> None:
     if isinstance(event, MagenticOrchestratorMessageEvent):
-        print(f"[ORCHESTRATOR]: {event.message.text}")
-    elif isinstance(event, MagenticAgentDeltaEvent):
-        print(event.text, end="")
+        emoji = "✅" if event.kind == "task_ledger" else "🦠"
+        console.print(
+            Panel(
+                Markdown(event.message.text),
+                title=f"{emoji} orchestrator: {event.kind}",
+                border_style="bold green",
+                padding=(1, 2),
+            )
+        )
+    elif isinstance(event, MagenticAgentMessageEvent):
+        console.print(
+            Panel(
+                Markdown(event.message.text),
+                title=f"🤖 {event.agent_id}",
+                border_style="bold blue",
+                padding=(1, 2),
+            )
+        )
 
 
 magentic_orchestrator = (
@@ -96,7 +119,7 @@ magentic_orchestrator = (
         language_agent=language_agent,
         travel_summary_agent=travel_summary_agent,
     )
-    .on_event(on_event, mode=MagenticCallbackMode.STREAMING)
+    .on_event(on_event, mode=MagenticCallbackMode.NON_STREAMING)
     .with_standard_manager(
         chat_client=client,
         max_round_count=20,
@@ -107,12 +130,18 @@ magentic_orchestrator = (
 )
 
 
-async def main():
-    async for event in magentic_orchestrator.run_stream("Plan a 3 day trip to Egypt"):
+async def main():    
+    async for event in magentic_orchestrator.run_stream("Plan a half-day trip to Costa Rica"):
         if isinstance(event, WorkflowOutputEvent):
             final_result = event.data
-            print(final_result.text)
-
+            console.print(
+                Panel(
+                    Markdown(final_result.text),
+                    title="🌎 final travel plan",
+                    border_style="bold green",
+                    padding=(1, 2),
+                )
+            )
 
 if __name__ == "__main__":
     asyncio.run(main())
