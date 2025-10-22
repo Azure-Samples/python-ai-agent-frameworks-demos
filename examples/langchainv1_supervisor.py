@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from langchain.agents import create_agent
 from langchain_core.messages import HumanMessage
 from langchain_core.tools import tool
-from langchain_openai import AzureChatOpenAI, ChatOpenAI
+from langchain_openai import ChatOpenAI
 from rich import print
 from rich.logging import RichHandler
 
@@ -23,11 +23,10 @@ if API_HOST == "azure":
         azure.identity.DefaultAzureCredential(),
         "https://cognitiveservices.azure.com/.default",
     )
-    base_model = AzureChatOpenAI(
-        azure_endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT"),
-        azure_deployment=os.environ.get("AZURE_OPENAI_CHAT_DEPLOYMENT"),
-        openai_api_version=os.environ.get("AZURE_OPENAI_VERSION"),
-        azure_ad_token_provider=token_provider,
+    base_model = ChatOpenAI(
+        model=os.environ.get("AZURE_OPENAI_CHAT_DEPLOYMENT"),
+        base_url=os.environ["AZURE_OPENAI_ENDPOINT"] + "/openai/v1",
+        api_key=token_provider,
     )
 elif API_HOST == "github":
     base_model = ChatOpenAI(
@@ -84,11 +83,7 @@ def get_current_date() -> str:
 
 weekend_agent = create_agent(
     model=base_model,
-    prompt=(
-        "You help users plan their weekends and choose the best activities for the given weather."
-        "If an activity would be unpleasant in the weather, don't suggest it."
-        "Include the date of the weekend in your response."
-    ),
+    system_prompt=("You help users plan their weekends and choose the best activities for the given weather." "If an activity would be unpleasant in the weather, don't suggest it." "Include the date of the weekend in your response."),
     tools=[get_weather, get_activities, get_current_date],
 )
 
@@ -149,11 +144,7 @@ def check_fridge() -> list[str]:
 
 meal_agent = create_agent(
     model=base_model,
-    prompt=(
-        "You help users plan meals and choose the best recipes."
-        "Include the ingredients and cooking instructions in your response."
-        "Indicate what user needs to buy from store when their fridge is missing ingredients."
-    ),
+    system_prompt=("You help users plan meals and choose the best recipes." "Include the ingredients and cooking instructions in your response." "Indicate what user needs to buy from store when their fridge is missing ingredients."),
     tools=[find_recipes, check_fridge],
 )
 
@@ -172,10 +163,7 @@ def plan_meal(query: str) -> str:
 # ----------------------------------------------------------------------------------
 supervisor_agent = create_agent(
     model=base_model,
-    prompt=(
-        "You are a supervisor, managing an activity planning agent and recipe planning agent."
-        "Assign work to them as needed in order to answer user's question."
-    ),
+    system_prompt=("You are a supervisor, managing an activity planning agent and recipe planning agent." "Assign work to them as needed in order to answer user's question."),
     tools=[plan_weekend, plan_meal],
 )
 

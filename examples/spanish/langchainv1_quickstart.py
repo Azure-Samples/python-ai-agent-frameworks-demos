@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 from langchain.agents import create_agent
 from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import tool
-from langchain_openai import AzureChatOpenAI, ChatOpenAI
+from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.runtime import get_runtime
 from rich import print
@@ -27,11 +27,10 @@ if API_HOST == "azure":
         azure.identity.DefaultAzureCredential(),
         "https://cognitiveservices.azure.com/.default",
     )
-    model = AzureChatOpenAI(
-        azure_endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT"),
-        azure_deployment=os.environ.get("AZURE_OPENAI_CHAT_DEPLOYMENT"),
-        openai_api_version=os.environ.get("AZURE_OPENAI_VERSION"),
-        azure_ad_token_provider=token_provider,
+    model = ChatOpenAI(
+        model=os.environ.get("AZURE_OPENAI_CHAT_DEPLOYMENT"),
+        base_url=os.environ["AZURE_OPENAI_ENDPOINT"] + "/openai/v1/",
+        api_key=token_provider,
     )
 elif API_HOST == "github":
     model = ChatOpenAI(
@@ -107,9 +106,7 @@ def main():
     config = {"configurable": {"thread_id": "1"}}
     context = UserContext(user_id="1")
 
-    r1 = agent.invoke(
-        {"messages": [{"role": "user", "content": "¿Qué clima hace afuera?"}]}, config=config, context=context
-    )
+    r1 = agent.invoke({"messages": [{"role": "user", "content": "¿Qué clima hace afuera?"}]}, config=config, context=context)
     print(r1.get("structured_response"))
 
     r2 = agent.invoke(

@@ -1,7 +1,7 @@
 import os
 
-import azure.identity
 import openai
+from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
 
 # Configuración del cliente OpenAI para usar Azure OpenAI o Modelos de GitHub
@@ -12,13 +12,10 @@ if API_HOST == "github":
     client = openai.OpenAI(base_url="https://models.inference.ai.azure.com", api_key=os.environ["GITHUB_TOKEN"])
     MODEL_NAME = os.getenv("GITHUB_MODEL", "gpt-4o")
 elif API_HOST == "azure":
-    token_provider = azure.identity.get_bearer_token_provider(
-        azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"
-    )
-    client = openai.AzureOpenAI(
-        api_version=os.environ["AZURE_OPENAI_VERSION"],
-        azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
-        azure_ad_token_provider=token_provider,
+    token_provider = get_bearer_token_provider(DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default")
+    client = openai.OpenAI(
+        base_url=os.environ["AZURE_OPENAI_ENDPOINT"] + "/openai/v1",
+        api_key=token_provider,
     )
     MODEL_NAME = os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"]
 

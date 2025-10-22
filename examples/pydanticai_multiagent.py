@@ -2,9 +2,10 @@ import asyncio
 import os
 from typing import Literal
 
-import azure.identity
+from azure.identity import DefaultAzureCredential
+from azure.identity.aio import get_bearer_token_provider
 from dotenv import load_dotenv
-from openai import AsyncAzureOpenAI, AsyncOpenAI
+from openai import AsyncOpenAI
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent, RunContext
 from pydantic_ai.messages import ModelMessage
@@ -20,13 +21,10 @@ if API_HOST == "github":
     client = AsyncOpenAI(api_key=os.environ["GITHUB_TOKEN"], base_url="https://models.inference.ai.azure.com")
     model = OpenAIChatModel(os.getenv("GITHUB_MODEL", "gpt-4o"), provider=OpenAIProvider(openai_client=client))
 elif API_HOST == "azure":
-    token_provider = azure.identity.get_bearer_token_provider(
-        azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"
-    )
-    client = AsyncAzureOpenAI(
-        api_version=os.environ["AZURE_OPENAI_VERSION"],
-        azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
-        azure_ad_token_provider=token_provider,
+    token_provider = get_bearer_token_provider(DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default")
+    client = AsyncOpenAI(
+        base_url=os.environ["AZURE_OPENAI_ENDPOINT"] + "/openai/v1",
+        api_key=token_provider,
     )
     model = OpenAIChatModel(os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"], provider=OpenAIProvider(openai_client=client))
 elif API_HOST == "ollama":
@@ -78,12 +76,7 @@ class Seat(BaseModel):
 seat_preference_agent = Agent(
     model,
     output_type=Seat | Failed,
-    system_prompt=(
-        "Extract the user's seat preference. "
-        "Seats A and F are window seats. "
-        "Row 1 is the front row and has extra leg room. "
-        "Rows 14, and 20 also have extra leg room. "
-    ),
+    system_prompt=("Extract the user's seat preference. " "Seats A and F are window seats. " "Row 1 is the front row and has extra leg room. " "Rows 14, and 20 also have extra leg room. "),
 )
 
 

@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 from langchain.agents import create_agent
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 from langchain_mcp_adapters.client import MultiServerMCPClient
-from langchain_openai import AzureChatOpenAI, ChatOpenAI
+from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field
 from rich import print
 from rich.logging import RichHandler
@@ -33,11 +33,10 @@ if API_HOST == "azure":
         azure.identity.DefaultAzureCredential(),
         "https://cognitiveservices.azure.com/.default",
     )
-    base_model = AzureChatOpenAI(
-        azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
-        azure_deployment=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
-        openai_api_version=os.environ["AZURE_OPENAI_VERSION"],
-        azure_ad_token_provider=token_provider,
+    base_model = ChatOpenAI(
+        model=os.environ.get("AZURE_OPENAI_CHAT_DEPLOYMENT"),
+        base_url=os.environ["AZURE_OPENAI_ENDPOINT"] + "/openai/v1/",
+        api_key=token_provider,
     )
 elif API_HOST == "github":
     base_model = ChatOpenAI(
@@ -86,9 +85,7 @@ async def main():
     agent = create_agent(base_model, prompt=prompt, tools=filtered_tools, response_format=IssueProposal)
 
     user_content = "Encuentra un issue abierto de Azure-samples azure-search-openai-demo que pueda cerrarse."
-    async for step in agent.astream(
-        {"messages": [HumanMessage(content=user_content)]}, stream_mode="updates", config={"recursion_limit": 100}
-    ):
+    async for step in agent.astream({"messages": [HumanMessage(content=user_content)]}, stream_mode="updates", config={"recursion_limit": 100}):
         for step_name, step_data in step.items():
             last_message = step_data["messages"][-1]
             if isinstance(last_message, AIMessage) and last_message.tool_calls:

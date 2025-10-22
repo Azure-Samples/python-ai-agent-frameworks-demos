@@ -1,27 +1,22 @@
-from __future__ import annotations
-
+# pip install agent-framework-devui==1.0.0b251016
 import os
 from typing import Any
 
-from agent_framework import (
-    AgentExecutorResponse,
-    WorkflowBuilder,
-)
-from agent_framework.azure import AzureOpenAIChatClient
+from agent_framework import AgentExecutorResponse, WorkflowBuilder
 from agent_framework.openai import OpenAIChatClient
 from azure.identity import DefaultAzureCredential
+from azure.identity.aio import get_bearer_token_provider
 from dotenv import load_dotenv
 from pydantic import BaseModel
 
+# Configure OpenAI client based on environment
 load_dotenv(override=True)
 API_HOST = os.getenv("API_HOST", "github")
-
 if API_HOST == "azure":
-    client = AzureOpenAIChatClient(
-        credential=DefaultAzureCredential(),
-        deployment_name=os.environ.get("AZURE_OPENAI_CHAT_DEPLOYMENT"),
-        endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT"),
-        api_version=os.environ.get("AZURE_OPENAI_VERSION"),
+    client = OpenAIChatClient(
+        base_url=os.environ.get("AZURE_OPENAI_ENDPOINT") + "/openai/v1/",
+        api_key=get_bearer_token_provider(DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"),
+        model_id=os.environ.get("AZURE_OPENAI_CHAT_DEPLOYMENT"),
     )
 elif API_HOST == "github":
     client = OpenAIChatClient(
@@ -36,9 +31,7 @@ elif API_HOST == "ollama":
         model_id=os.environ.get("OLLAMA_MODEL", "llama3.1:latest"),
     )
 else:
-    client = OpenAIChatClient(
-        api_key=os.environ.get("OPENAI_API_KEY"), model_id=os.environ.get("OPENAI_MODEL", "gpt-4o")
-    )
+    client = OpenAIChatClient(api_key=os.environ.get("OPENAI_API_KEY"), model_id=os.environ.get("OPENAI_MODEL", "gpt-4o"))
 
 
 # Define structured output for review results
@@ -80,11 +73,7 @@ def is_approved(message: Any) -> bool:
 # Create Writer agent - generates content
 writer = client.create_agent(
     name="Writer",
-    instructions=(
-        "You are an excellent content writer. "
-        "Create clear, engaging content based on the user's request. "
-        "Focus on clarity, accuracy, and proper structure."
-    ),
+    instructions=("You are an excellent content writer. " "Create clear, engaging content based on the user's request. " "Focus on clarity, accuracy, and proper structure."),
 )
 
 # Create Reviewer agent - evaluates and provides structured feedback
@@ -119,11 +108,7 @@ editor = client.create_agent(
 # Create Publisher agent - formats content for publication
 publisher = client.create_agent(
     name="Publisher",
-    instructions=(
-        "You are a publishing agent. "
-        "You receive either approved content or edited content. "
-        "Format it for publication with proper headings and structure."
-    ),
+    instructions=("You are a publishing agent. " "You receive either approved content or edited content. " "Format it for publication with proper headings and structure."),
 )
 
 # Create Summarizer agent - creates final publication report

@@ -18,9 +18,10 @@ import json
 import logging
 import os
 
-import azure.identity
+from azure.identity import DefaultAzureCredential
+from azure.identity.aio import get_bearer_token_provider
 from dotenv import load_dotenv
-from openai import AsyncAzureOpenAI, AsyncOpenAI
+from openai import AsyncOpenAI
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent, CallToolsNode, ModelRequestNode
 from pydantic_ai.mcp import MCPServerStreamableHTTP
@@ -41,14 +42,13 @@ API_HOST = os.getenv("API_HOST", "github")
 
 
 if API_HOST == "azure":
-    token_provider = azure.identity.get_bearer_token_provider(
-        azure.identity.DefaultAzureCredential(),
+    token_provider = get_bearer_token_provider(
+        DefaultAzureCredential(),
         "https://cognitiveservices.azure.com/.default",
     )
-    client = AsyncAzureOpenAI(
-        api_version=os.environ["AZURE_OPENAI_VERSION"],
-        azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
-        azure_ad_token_provider=token_provider,
+    client = AsyncOpenAI(
+        base_url=os.environ["AZURE_OPENAI_ENDPOINT"] + "/openai/v1",
+        api_key=token_provider,
     )
     model = OpenAIChatModel(
         os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
@@ -56,17 +56,13 @@ if API_HOST == "azure":
     )
 elif API_HOST == "github":
     client = AsyncOpenAI(api_key=os.environ["GITHUB_TOKEN"], base_url="https://models.inference.ai.azure.com")
-    model = OpenAIChatModel(
-        os.environ.get("GITHUB_MODEL", "gpt-4o-mini"), provider=OpenAIProvider(openai_client=client)
-    )
+    model = OpenAIChatModel(os.environ.get("GITHUB_MODEL", "gpt-4o-mini"), provider=OpenAIProvider(openai_client=client))
 elif API_HOST == "ollama":
     client = AsyncOpenAI(base_url=os.environ["OLLAMA_ENDPOINT"], api_key="none")
     model = OpenAIChatModel(os.environ["OLLAMA_MODEL"], provider=OpenAIProvider(openai_client=client))
 else:
     client = AsyncOpenAI()
-    model = OpenAIChatModel(
-        os.environ.get("OPENAI_MODEL", "gpt-4o-mini"), provider=OpenAIProvider(openai_client=client)
-    )
+    model = OpenAIChatModel(os.environ.get("OPENAI_MODEL", "gpt-4o-mini"), provider=OpenAIProvider(openai_client=client))
 
 
 class IssueProposal(BaseModel):
@@ -80,18 +76,13 @@ class IssueProposal(BaseModel):
 
 
 async def main():
-    server = MCPServerStreamableHTTP(
-        url="https://api.githubcopilot.com/mcp/", headers={"Authorization": f"Bearer {os.getenv('GITHUB_TOKEN', '')}"}
-    )
+    server = MCPServerStreamableHTTP(url="https://api.githubcopilot.com/mcp/", headers={"Authorization": f"Bearer {os.getenv('GITHUB_TOKEN', '')}"})
     desired_tool_names = ("list_issues", "search_code", "search_issues", "search_pull_requests")
     filtered_tools = server.filtered(lambda ctx, tool_def: tool_def.name in desired_tool_names)
 
     agent: Agent[None, IssueProposal] = Agent(
         model,
-        system_prompt=(
-            "Eres un asistente de triaje de issues. Usa las herramientas proporcionadas para encontrar un issue que pueda cerrarse "
-            "y produce un IssueProposal."
-        ),
+        system_prompt=("Eres un asistente de triaje de issues. Usa las herramientas proporcionadas para encontrar un issue que pueda cerrarse " "y produce un IssueProposal."),
         output_type=IssueProposal,
         toolsets=[filtered_tools],
     )

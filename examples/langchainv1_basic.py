@@ -3,7 +3,7 @@ import os
 import azure.identity
 from dotenv import load_dotenv
 from langchain.agents import create_agent
-from langchain_openai import AzureChatOpenAI, ChatOpenAI
+from langchain_openai import ChatOpenAI
 from rich import print
 
 load_dotenv(override=True)
@@ -14,11 +14,10 @@ if API_HOST == "azure":
         azure.identity.DefaultAzureCredential(),
         "https://cognitiveservices.azure.com/.default",
     )
-    model = AzureChatOpenAI(
-        azure_endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT"),
-        azure_deployment=os.environ.get("AZURE_OPENAI_CHAT_DEPLOYMENT"),
-        openai_api_version=os.environ.get("AZURE_OPENAI_VERSION"),
-        azure_ad_token_provider=token_provider,
+    model = ChatOpenAI(
+        model=os.environ.get("AZURE_OPENAI_CHAT_DEPLOYMENT"),
+        base_url=os.environ["AZURE_OPENAI_ENDPOINT"] + "/openai/v1",
+        api_key=token_provider,
     )
 elif API_HOST == "github":
     model = ChatOpenAI(
@@ -35,7 +34,7 @@ elif API_HOST == "ollama":
 else:
     model = ChatOpenAI(model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"))
 
-agent = create_agent(model=model, prompt="You're an informational agent. Answer questions cheerfully.", tools=[])
+agent = create_agent(model=model, system_prompt="You're an informational agent. Answer questions cheerfully.", tools=[])
 
 
 def main():

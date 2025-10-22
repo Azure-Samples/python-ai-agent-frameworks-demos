@@ -6,7 +6,6 @@ import os
 
 from agent_framework import (
     ChatAgent,
-    MagenticAgentDeltaEvent,
     MagenticAgentMessageEvent,
     MagenticBuilder,
     MagenticCallbackEvent,
@@ -21,7 +20,6 @@ from dotenv import load_dotenv
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
-from rich.text import Text
 
 # Setup the client to use either Azure OpenAI or GitHub Models
 load_dotenv(override=True)
@@ -47,9 +45,7 @@ elif API_HOST == "ollama":
         model_id=os.environ.get("OLLAMA_MODEL", "llama3.1:latest"),
     )
 else:
-    client = OpenAIChatClient(
-        api_key=os.environ.get("OPENAI_API_KEY"), model_id=os.environ.get("OPENAI_MODEL", "gpt-4o")
-    )
+    client = OpenAIChatClient(api_key=os.environ.get("OPENAI_API_KEY"), model_id=os.environ.get("OPENAI_MODEL", "gpt-4o"))
 
 # Initialize rich console
 console = Console()
@@ -57,10 +53,7 @@ console = Console()
 # Create the agents
 local_agent = ChatAgent(
     chat_client=client,
-    instructions=(
-        "You are a helpful assistant that can suggest authentic and interesting local activities "
-        "or places to visit for a user and can utilize any context information provided."
-    ),
+    instructions=("You are a helpful assistant that can suggest authentic and interesting local activities " "or places to visit for a user and can utilize any context information provided."),
     name="local_agent",
     description="A local assistant that can suggest local activities or places to visit.",
 )
@@ -130,7 +123,7 @@ magentic_orchestrator = (
 )
 
 
-async def main():    
+async def main():
     async for event in magentic_orchestrator.run_stream("Plan a half-day trip to Costa Rica"):
         if isinstance(event, WorkflowOutputEvent):
             final_result = event.data
@@ -142,6 +135,7 @@ async def main():
                     padding=(1, 2),
                 )
             )
+
 
 if __name__ == "__main__":
     asyncio.run(main())

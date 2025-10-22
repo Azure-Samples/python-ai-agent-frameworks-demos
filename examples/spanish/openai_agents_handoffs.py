@@ -1,10 +1,11 @@
 import asyncio
 import os
 
-import azure.identity
 import openai
 from agents import Agent, OpenAIChatCompletionsModel, Runner, function_tool, set_tracing_disabled
 from agents.extensions.visualization import draw_graph
+from azure.identity import DefaultAzureCredential
+from azure.identity.aio import get_bearer_token_provider
 from dotenv import load_dotenv
 
 # Desactivamos el rastreo ya que no estamos usando modelos de OpenAI.com
@@ -18,13 +19,10 @@ if API_HOST == "github":
     client = openai.AsyncOpenAI(base_url="https://models.inference.ai.azure.com", api_key=os.environ["GITHUB_TOKEN"])
     MODEL_NAME = os.getenv("GITHUB_MODEL", "gpt-4o")
 elif API_HOST == "azure":
-    token_provider = azure.identity.get_bearer_token_provider(
-        azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"
-    )
-    client = openai.AsyncAzureOpenAI(
-        api_version=os.environ["AZURE_OPENAI_VERSION"],
-        azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
-        azure_ad_token_provider=token_provider,
+    token_provider = get_bearer_token_provider(DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default")
+    client = openai.AsyncOpenAI(
+        base_url=os.environ["AZURE_OPENAI_ENDPOINT"] + "/openai/v1",
+        api_key=token_provider,
     )
     MODEL_NAME = os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"]
 

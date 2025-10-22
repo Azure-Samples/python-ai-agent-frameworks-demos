@@ -1,5 +1,4 @@
-from __future__ import annotations
-
+# pip install agent-framework-devui==1.0.0b251016
 import os
 from typing import Any
 
@@ -33,9 +32,7 @@ elif API_HOST == "ollama":
         model_id=os.environ.get("OLLAMA_MODEL", "llama3.1:latest"),
     )
 else:
-    client = OpenAIChatClient(
-        api_key=os.environ.get("OPENAI_API_KEY"), model_id=os.environ.get("OPENAI_MODEL", "gpt-4o")
-    )
+    client = OpenAIChatClient(api_key=os.environ.get("OPENAI_API_KEY"), model_id=os.environ.get("OPENAI_MODEL", "gpt-4o"))
 
 
 # Definir salida estructurada para resultados de revisión
@@ -77,11 +74,7 @@ def esta_aprobado(message: Any) -> bool:
 # Crear agente Escritor - genera contenido
 escritor = client.create_agent(
     name="Escritor",
-    instructions=(
-        "Sos un excelente escritor de contenido. "
-        "Creá contenido claro y atractivo basado en la solicitud del usuario. "
-        "Enfocate en la claridad, precisión y estructura adecuada."
-    ),
+    instructions=("Sos un excelente escritor de contenido. " "Creá contenido claro y atractivo basado en la solicitud del usuario. " "Enfocate en la claridad, precisión y estructura adecuada."),
 )
 
 # Crear agente Revisor - evalúa y proporciona retroalimentación estructurada
@@ -116,11 +109,7 @@ editor = client.create_agent(
 # Crear agente Publicador - formatea el contenido para publicación
 publicador = client.create_agent(
     name="Publicador",
-    instructions=(
-        "Sos un agente de publicación. "
-        "Recibís contenido aprobado o editado. "
-        "Formatealo para publicación con encabezados y estructura adecuados."
-    ),
+    instructions=("Sos un agente de publicación. " "Recibís contenido aprobado o editado. " "Formatealo para publicación con encabezados y estructura adecuados."),
 )
 
 # Crear agente Resumidor - crea el informe final de publicación

@@ -1,11 +1,10 @@
-# https://github.com/JRAlexander/IntroToAgents1-Oxford/blob/main/intro-langgraph/time-travel.ipynb
 import os
 
 import azure.identity
 from dotenv import load_dotenv
 from langchain_core.messages import HumanMessage
 from langchain_core.tools import tool
-from langchain_openai import AzureChatOpenAI, ChatOpenAI
+from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, MessagesState, StateGraph
 from langgraph.prebuilt import ToolNode
@@ -15,14 +14,11 @@ load_dotenv(override=True)
 API_HOST = os.getenv("API_HOST", "github")
 
 if API_HOST == "azure":
-    token_provider = azure.identity.get_bearer_token_provider(
-        azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"
-    )
-    model = AzureChatOpenAI(
-        azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
-        azure_deployment=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
-        openai_api_version=os.environ["AZURE_OPENAI_VERSION"],
-        azure_ad_token_provider=token_provider,
+    token_provider = azure.identity.get_bearer_token_provider(azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default")
+    model = ChatOpenAI(
+        model=os.environ.get("AZURE_OPENAI_CHAT_DEPLOYMENT"),
+        base_url=os.environ["AZURE_OPENAI_ENDPOINT"] + "/openai/v1",
+        api_key=token_provider,
     )
 elif API_HOST == "github":
     model = ChatOpenAI(

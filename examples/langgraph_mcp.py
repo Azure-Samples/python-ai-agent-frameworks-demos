@@ -10,7 +10,7 @@ import os
 import azure.identity
 from dotenv import load_dotenv
 from langchain_mcp_adapters.client import MultiServerMCPClient
-from langchain_openai import AzureChatOpenAI, ChatOpenAI
+from langchain_openai import ChatOpenAI
 from langgraph.graph import START, MessagesState, StateGraph
 from langgraph.prebuilt import ToolNode, tools_condition
 
@@ -19,14 +19,11 @@ load_dotenv(override=True)
 API_HOST = os.getenv("API_HOST", "github")
 
 if API_HOST == "azure":
-    token_provider = azure.identity.get_bearer_token_provider(
-        azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"
-    )
-    model = AzureChatOpenAI(
-        azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
-        azure_deployment=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
-        openai_api_version=os.environ["AZURE_OPENAI_VERSION"],
-        azure_ad_token_provider=token_provider,
+    token_provider = azure.identity.get_bearer_token_provider(azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default")
+    model = ChatOpenAI(
+        model=os.environ.get("AZURE_OPENAI_CHAT_DEPLOYMENT"),
+        base_url=os.environ["AZURE_OPENAI_ENDPOINT"] + "/openai/v1",
+        api_key=token_provider,
     )
 else:
     model = ChatOpenAI(
@@ -62,9 +59,7 @@ async def setup_agent():
     )
     builder.add_edge("tools", "call_model")
     graph = builder.compile()
-    hotel_response = await graph.ainvoke(
-        {"messages": "Find a hotel in SF for 2 nights starting from 2024-01-01. I need free WiFi and pool."}
-    )
+    hotel_response = await graph.ainvoke({"messages": "Find a hotel in SF for 2 nights starting from 2024-01-01. I need free WiFi and pool."})
     print(hotel_response["messages"][-1].content)
     image_bytes = graph.get_graph().draw_mermaid_png()
     with open("examples/images/langgraph_mcp_http_graph.png", "wb") as f:

@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 from langchain.agents import create_agent
 from langchain_core.messages import HumanMessage
 from langchain_mcp_adapters.client import MultiServerMCPClient
-from langchain_openai import AzureChatOpenAI, ChatOpenAI
+from langchain_openai import ChatOpenAI
 from rich.logging import RichHandler
 
 logging.basicConfig(level=logging.WARNING, format="%(message)s", datefmt="[%X]", handlers=[RichHandler()])
@@ -23,14 +23,11 @@ load_dotenv(override=True)
 API_HOST = os.getenv("API_HOST", "github")
 
 if API_HOST == "azure":
-    token_provider = azure.identity.get_bearer_token_provider(
-        azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"
-    )
-    base_model = AzureChatOpenAI(
-        azure_endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT"),
-        azure_deployment=os.environ.get("AZURE_OPENAI_CHAT_DEPLOYMENT"),
-        openai_api_version=os.environ.get("AZURE_OPENAI_VERSION"),
-        azure_ad_token_provider=token_provider,
+    token_provider = azure.identity.get_bearer_token_provider(azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default")
+    base_model = ChatOpenAI(
+        model=os.environ.get("AZURE_OPENAI_CHAT_DEPLOYMENT"),
+        base_url=os.environ["AZURE_OPENAI_ENDPOINT"] + "/openai/v1/",
+        api_key=token_provider,
     )
 elif API_HOST == "github":
     base_model = ChatOpenAI(
@@ -62,10 +59,7 @@ async def run_agent():
     tools = await client.get_tools()
     agent = create_agent(base_model, tools)
 
-    user_query = (
-        "Encuéntrame un hotel en San Francisco para 2 noches comenzando el 2026-01-01. "
-        "Necesito un hotel con WiFi gratis y piscina."
-    )
+    user_query = "Encuéntrame un hotel en San Francisco para 2 noches comenzando el 2026-01-01. " "Necesito un hotel con WiFi gratis y piscina."
 
     response = await agent.ainvoke({"messages": [HumanMessage(content=user_query)]})
     final = response["messages"][-1].content
