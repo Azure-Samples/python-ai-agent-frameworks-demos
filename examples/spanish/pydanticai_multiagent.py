@@ -20,7 +20,9 @@ if API_HOST == "github":
     client = AsyncOpenAI(api_key=os.environ["GITHUB_TOKEN"], base_url="https://models.inference.ai.azure.com")
     model = OpenAIChatModel(os.getenv("GITHUB_MODEL", "gpt-4o"), provider=OpenAIProvider(openai_client=client))
 elif API_HOST == "azure":
-    token_provider = azure.identity.get_bearer_token_provider(azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default")
+    token_provider = azure.identity.get_bearer_token_provider(
+        azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"
+    )
     client = AsyncAzureOpenAI(
         api_version=os.environ["AZURE_OPENAI_VERSION"],
         azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
@@ -43,7 +45,9 @@ class Failed(BaseModel):
 flight_search_agent = Agent(
     model,
     output_type=Flight | Failed,
-    system_prompt=('Usa la herramienta "flight_search" para encontrar un vuelo desde el origen hasta el destino indicado.'),
+    system_prompt=(
+        'Usa la herramienta "flight_search" para encontrar un vuelo desde el origen hasta el destino indicado.'
+    ),
 )
 
 
@@ -76,10 +80,12 @@ class Seat(BaseModel):
 seat_preference_agent = Agent(
     model,
     output_type=Seat | Failed,
-    system_prompt=("Extrae la preferencia de asiento del usuario. "
-                   "Los asientos A y F son asientos de ventana. "
-                   "La fila 1 es la fila delantera y tiene más espacio para las piernas. "
-                   "Las filas 14 y 20 también tienen más espacio para las piernas."),
+    system_prompt=(
+        "Extrae la preferencia de asiento del usuario. "
+        "Los asientos A y F son asientos de ventana. "
+        "La fila 1 es la fila delantera y tiene más espacio para las piernas. "
+        "Las filas 14 y 20 también tienen más espacio para las piernas."
+    ),
 )
 
 

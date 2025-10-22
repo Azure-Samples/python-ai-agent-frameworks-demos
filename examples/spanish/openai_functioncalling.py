@@ -12,7 +12,9 @@ if API_HOST == "github":
     client = openai.OpenAI(base_url="https://models.inference.ai.azure.com", api_key=os.environ["GITHUB_TOKEN"])
     MODEL_NAME = os.getenv("GITHUB_MODEL", "gpt-4o")
 elif API_HOST == "azure":
-    token_provider = azure.identity.get_bearer_token_provider(azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default")
+    token_provider = azure.identity.get_bearer_token_provider(
+        azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"
+    )
     client = openai.AzureOpenAI(
         api_version=os.environ["AZURE_OPENAI_VERSION"],
         azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
@@ -69,7 +71,10 @@ response = client.chat.completions.create(
     model=MODEL_NAME,
     messages=[
         {"role": "system", "content": "Eres un chatbot de turismo."},
-        {"role": "user", "content": "¿está lloviendo lo suficiente en Cuenca, Ecuador como para ir a ver películas y cuáles están en cartelera?"},
+        {
+            "role": "user",
+            "content": "¿está lloviendo lo suficiente en Cuenca, Ecuador como para ir a ver películas y cuáles están en cartelera?",
+        },
     ],
     tools=tools,
     tool_choice="auto",

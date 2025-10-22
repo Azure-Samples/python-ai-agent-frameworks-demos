@@ -87,7 +87,9 @@ agent = create_agent(
 
 
 def main():
-    response = agent.invoke({"messages": [{"role": "user", "content": "hii what can I do this weekend in San Francisco?"}]})
+    response = agent.invoke(
+        {"messages": [{"role": "user", "content": "hii what can I do this weekend in San Francisco?"}]}
+    )
     latest_message = response["messages"][-1]
     print(latest_message.content)
 

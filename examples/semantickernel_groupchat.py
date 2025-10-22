@@ -37,16 +37,22 @@ def create_kernel() -> Kernel:
     kernel = Kernel()
 
     if API_HOST == "azure":
-        token_provider = azure.identity.get_bearer_token_provider(azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default")
+        token_provider = azure.identity.get_bearer_token_provider(
+            azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"
+        )
         chat_client = AsyncAzureOpenAI(
             api_version=os.environ["AZURE_OPENAI_VERSION"],
             azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
             azure_ad_token_provider=token_provider,
         )
-        chat_completion_service = OpenAIChatCompletion(ai_model_id=os.environ["AZURE_OPENAI_CHAT_MODEL"], async_client=chat_client)
+        chat_completion_service = OpenAIChatCompletion(
+            ai_model_id=os.environ["AZURE_OPENAI_CHAT_MODEL"], async_client=chat_client
+        )
     else:
         chat_client = AsyncOpenAI(api_key=os.environ["GITHUB_TOKEN"], base_url="https://models.inference.ai.azure.com")
-        chat_completion_service = OpenAIChatCompletion(ai_model_id=os.getenv("GITHUB_MODEL", "gpt-4o"), async_client=chat_client)
+        chat_completion_service = OpenAIChatCompletion(
+            ai_model_id=os.getenv("GITHUB_MODEL", "gpt-4o"), async_client=chat_client
+        )
     kernel.add_service(chat_completion_service)
     return kernel
 
@@ -145,7 +151,10 @@ RESPONSE:
         ),
     )
 
-    print("Ready! Type your input, or 'exit' to quit, 'reset' to restart the conversation. " "You may pass in a file path using @<path_to_file>.")
+    print(
+        "Ready! Type your input, or 'exit' to quit, 'reset' to restart the conversation. "
+        "You may pass in a file path using @<path_to_file>."
+    )
 
     is_complete = False
     while not is_complete:

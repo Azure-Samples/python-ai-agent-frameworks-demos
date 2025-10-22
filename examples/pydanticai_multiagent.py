@@ -20,7 +20,9 @@ if API_HOST == "github":
     client = AsyncOpenAI(api_key=os.environ["GITHUB_TOKEN"], base_url="https://models.inference.ai.azure.com")
     model = OpenAIChatModel(os.getenv("GITHUB_MODEL", "gpt-4o"), provider=OpenAIProvider(openai_client=client))
 elif API_HOST == "azure":
-    token_provider = azure.identity.get_bearer_token_provider(azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default")
+    token_provider = azure.identity.get_bearer_token_provider(
+        azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"
+    )
     client = AsyncAzureOpenAI(
         api_version=os.environ["AZURE_OPENAI_VERSION"],
         azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
@@ -76,7 +78,12 @@ class Seat(BaseModel):
 seat_preference_agent = Agent(
     model,
     output_type=Seat | Failed,
-    system_prompt=("Extract the user's seat preference. " "Seats A and F are window seats. " "Row 1 is the front row and has extra leg room. " "Rows 14, and 20 also have extra leg room. "),
+    system_prompt=(
+        "Extract the user's seat preference. "
+        "Seats A and F are window seats. "
+        "Row 1 is the front row and has extra leg room. "
+        "Rows 14, and 20 also have extra leg room. "
+    ),
 )
 
 

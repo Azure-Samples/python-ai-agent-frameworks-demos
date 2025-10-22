@@ -63,9 +63,7 @@ def get_weather(
 
 
 agent = ChatAgent(
-    chat_client=client,
-    instructions="You're an informational agent. Answer questions cheerfully.",
-    tools=[get_weather]
+    chat_client=client, instructions="You're an informational agent. Answer questions cheerfully.", tools=[get_weather]
 )
 
 

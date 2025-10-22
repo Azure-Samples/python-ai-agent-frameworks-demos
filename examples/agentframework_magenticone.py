@@ -4,10 +4,8 @@ Agent Framework MagenticOne Example - Travel Planning with Multiple Agents
 import asyncio
 import os
 
-from agent_framework import ChatAgent
-from agent_framework.azure import AzureOpenAIChatClient
-from agent_framework.openai import OpenAIChatClient
 from agent_framework import (
+    ChatAgent,
     MagenticAgentDeltaEvent,
     MagenticBuilder,
     MagenticCallbackEvent,
@@ -15,6 +13,8 @@ from agent_framework import (
     MagenticOrchestratorMessageEvent,
     WorkflowOutputEvent,
 )
+from agent_framework.azure import AzureOpenAIChatClient
+from agent_framework.openai import OpenAIChatClient
 from azure.identity import DefaultAzureCredential
 from dotenv import load_dotenv
 
@@ -106,11 +106,13 @@ magentic_orchestrator = (
     .build()
 )
 
+
 async def main():
     async for event in magentic_orchestrator.run_stream("Plan a 3 day trip to Egypt"):
         if isinstance(event, WorkflowOutputEvent):
             final_result = event.data
             print(final_result.text)
+
 
 if __name__ == "__main__":
     asyncio.run(main())

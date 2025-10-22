@@ -1,30 +1,14 @@
 from __future__ import annotations
 
-import asyncio
-import os
-
-from agent_framework.azure import AzureOpenAIChatClient
-from agent_framework.openai import OpenAIChatClient
-from azure.identity import DefaultAzureCredential
-from agent_framework import (
-    ChatMessage,
-    HandoffBuilder,
-    HandoffUserInputRequest,
-    RequestInfoEvent,
-    WorkflowEvent,
-    AgentRunEvent,
-
-)
 import os
 from typing import Any
 
 from agent_framework import AgentExecutorResponse, WorkflowBuilder
 from agent_framework.azure import AzureOpenAIChatClient
-from pydantic import BaseModel
-
-
+from agent_framework.openai import OpenAIChatClient
+from azure.identity import DefaultAzureCredential
 from dotenv import load_dotenv
-from rich import print
+from pydantic import BaseModel
 
 load_dotenv(override=True)
 API_HOST = os.getenv("API_HOST", "github")
@@ -52,6 +36,7 @@ else:
     client = OpenAIChatClient(
         api_key=os.environ.get("OPENAI_API_KEY"), model_id=os.environ.get("OPENAI_MODEL", "gpt-4o")
     )
+
 
 # Definir salida estructurada para resultados de revisión
 class ResultadoRevision(BaseModel):
@@ -87,6 +72,7 @@ def esta_aprobado(message: Any) -> bool:
         return revision.puntaje >= 80
     except Exception:
         return True
+
 
 # Crear agente Escritor - genera contenido
 escritor = client.create_agent(
@@ -175,7 +161,9 @@ flujo_trabajo = (
 
 def main():
     from agent_framework.devui import serve
+
     serve(entities=[flujo_trabajo], port=8093, auto_open=True)
+
 
 if __name__ == "__main__":
     main()
