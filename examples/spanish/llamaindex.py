@@ -48,7 +48,9 @@ else:
     )
 
     Settings.embed_model = OpenAIEmbedding(
-        model="text-embedding-3-small", api_base="https://models.inference.ai.azure.com", api_key=os.environ["GITHUB_TOKEN"]
+        model="text-embedding-3-small",
+        api_base="https://models.inference.ai.azure.com",
+        api_key=os.environ["GITHUB_TOKEN"],
     )
 
 # Intentamos cargar el índice desde el almacenamiento
@@ -88,7 +90,9 @@ query_engine_tools = [
     QueryEngineTool.from_defaults(
         query_engine=engine2,
         name="engine2",
-        description=("Proporciona información sobre el programa PerksPlus de Contoso, incluyendo qué puede ser reembolsado."),
+        description=(
+            "Proporciona información sobre el programa PerksPlus de Contoso, incluyendo qué puede ser reembolsado."
+        ),
     ),
 ]
 

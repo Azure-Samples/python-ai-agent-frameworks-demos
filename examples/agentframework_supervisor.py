@@ -14,13 +14,15 @@ from pydantic import Field
 from rich import print
 from rich.logging import RichHandler
 
-# Logging setup
-logging.basicConfig(level=logging.WARNING, format="%(message)s", datefmt="[%X]", handlers=[RichHandler()])
-logger = logging.getLogger("supervisor_demo")
+# Setup logging
+handler = RichHandler(show_path=False, rich_tracebacks=True, show_level=False)
+logging.basicConfig(level=logging.WARNING, handlers=[handler], force=True, format="%(message)s")
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
+# Configure OpenAI client based on environment
 load_dotenv(override=True)
 API_HOST = os.getenv("API_HOST", "github")
-
 if API_HOST == "azure":
     client = OpenAIChatClient(
         base_url=os.environ.get("AZURE_OPENAI_ENDPOINT") + "/openai/v1/",
@@ -141,7 +143,9 @@ def check_fridge() -> list[str]:
 
 meal_agent = ChatAgent(
     chat_client=client,
-    instructions=("You help users plan meals and choose the best recipes. " "Include the ingredients and cooking instructions in your response. " "Indicate what the user needs to buy from the store when their fridge is missing ingredients."),
+    instructions=(
+        "You help users plan meals and choose the best recipes. " "Include the ingredients and cooking instructions in your response. " "Indicate what the user needs to buy from the store when their fridge is missing ingredients."
+    ),
     tools=[find_recipes, check_fridge],
 )
 
@@ -159,7 +163,11 @@ async def plan_meal(query: str) -> str:
 
 supervisor_agent = ChatAgent(
     chat_client=client,
-    instructions=("You are a supervisor managing two specialist agents: a weekend planning agent and a meal planning agent. " "Break down the user's request, decide which specialist (or both) to call via the available tools, " "and then synthesize a final helpful answer. When invoking a tool, provide clear, concise queries."),
+    instructions=(
+        "You are a supervisor managing two specialist agents: a weekend planning agent and a meal planning agent. "
+        "Break down the user's request, decide which specialist (or both) to call via the available tools, "
+        "and then synthesize a final helpful answer. When invoking a tool, provide clear, concise queries."
+    ),
     tools=[plan_weekend, plan_meal],
 )
 

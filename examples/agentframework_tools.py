@@ -14,13 +14,15 @@ from pydantic import Field
 from rich import print
 from rich.logging import RichHandler
 
-# Setup logging with rich
-logging.basicConfig(level=logging.WARNING, format="%(message)s", datefmt="[%X]", handlers=[RichHandler()])
-logger = logging.getLogger("weekend_planner")
+# Setup logging
+handler = RichHandler(show_path=False, rich_tracebacks=True, show_level=False)
+logging.basicConfig(level=logging.WARNING, handlers=[handler], force=True, format="%(message)s")
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
+# Configure OpenAI client based on environment
 load_dotenv(override=True)
 API_HOST = os.getenv("API_HOST", "github")
-
 if API_HOST == "azure":
     client = OpenAIChatClient(
         base_url=os.environ.get("AZURE_OPENAI_ENDPOINT") + "/openai/v1/",

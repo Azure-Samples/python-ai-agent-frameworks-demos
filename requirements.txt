@@ -6,8 +6,6 @@ rich
 dotenv-azd
 aiohttp
 faker
-autogen-agentchat
-autogen-ext[openai]
 openai-agents
 semantic-kernel
 langgraph

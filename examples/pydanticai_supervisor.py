@@ -78,7 +78,11 @@ english_weather_agent = Agent(
 triage_agent = Agent(
     base_model,
     output_type=TriageResult,
-    system_prompt=("You are a triage agent. Determine whether the user's request is primarily in Spanish or English. " "Return language (either 'spanish' or 'english') and reason (a brief explanation of your choice) " "Only choose 'spanish' if the request is entirely in Spanish; otherwise choose 'english'."),
+    system_prompt=(
+        "You are a triage agent. Determine whether the user's request is primarily in Spanish or English. "
+        "Return language (either 'spanish' or 'english') and reason (a brief explanation of your choice) "
+        "Only choose 'spanish' if the request is entirely in Spanish; otherwise choose 'english'."
+    ),
 )
 
 

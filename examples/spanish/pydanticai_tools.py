@@ -72,7 +72,11 @@ def obtener_fecha_actual() -> str:
 
 agent = Agent(
     model,
-    system_prompt=("Ayuda al usuario a planificar su fin de semana y a elegir las " "mejores actividades según el clima proporcionado. No sugieras actividades que puedan " "resultar desagradables con ese clima. Incluye la fecha del fin de semana en tu respuesta."),
+    system_prompt=(
+        "Ayuda al usuario a planificar su fin de semana y a elegir las "
+        "mejores actividades según el clima proporcionado. No sugieras actividades que puedan "
+        "resultar desagradables con ese clima. Incluye la fecha del fin de semana en tu respuesta."
+    ),
     tools=[obtener_clima, obtener_actividades, obtener_fecha_actual],
 )
 

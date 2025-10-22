@@ -76,7 +76,9 @@ class Seat(BaseModel):
 seat_preference_agent = Agent(
     model,
     output_type=Seat | Failed,
-    system_prompt=("Extrae la preferencia de asiento del usuario. " "Los asientos A y F son asientos de ventana. " "La fila 1 es la fila delantera y tiene más espacio para las piernas. " "Las filas 14 y 20 también tienen más espacio para las piernas."),
+    system_prompt=(
+        "Extrae la preferencia de asiento del usuario. " "Los asientos A y F son asientos de ventana. " "La fila 1 es la fila delantera y tiene más espacio para las piernas. " "Las filas 14 y 20 también tienen más espacio para las piernas."
+    ),
 )
 
 
