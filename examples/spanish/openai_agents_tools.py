@@ -25,6 +25,7 @@ if API_HOST == "github":
     client = openai.AsyncOpenAI(base_url="https://models.inference.ai.azure.com", api_key=os.environ["GITHUB_TOKEN"])
     MODEL_NAME = os.getenv("GITHUB_MODEL", "gpt-4o")
 elif API_HOST == "azure":
+    azure_credential = DefaultAzureCredential()
     token_provider = get_bearer_token_provider(DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default")
     client = openai.AsyncOpenAI(
         base_url=os.environ["AZURE_OPENAI_ENDPOINT"] + "/openai/v1",

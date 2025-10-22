@@ -6,7 +6,8 @@ from datetime import datetime
 
 import openai
 from agents import Agent, OpenAIChatCompletionsModel, Runner, function_tool, set_tracing_disabled
-from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
+from azure.identity import DefaultAzureCredential
+from azure.identity.aio import get_bearer_token_provider
 from dotenv import load_dotenv
 from rich.logging import RichHandler
 
