@@ -7,8 +7,6 @@ azure-ai-inference
 dotenv-azd
 aiohttp
 faker
-autogen-agentchat
-autogen-ext[openai]
 azure-ai-inference==1.0.0b9
 openai-agents
 semantic-kernel

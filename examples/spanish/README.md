@@ -187,7 +187,6 @@ Este proyecto incluye infraestructura como código (IaC) para provisionar despli
 
 ## Recursos
 
-* [Documentación de AutoGen](https://microsoft.github.io/autogen/)
 * [Documentación de LangGraph](https://langchain-ai.github.io/langgraph/tutorials/introduction/)
 * [Documentación de LlamaIndex](https://docs.llamaindex.ai/en/latest/)
 * [Documentación de OpenAI Agents](https://openai.github.io/openai-agents-python/)

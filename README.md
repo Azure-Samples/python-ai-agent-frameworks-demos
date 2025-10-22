@@ -197,7 +197,6 @@ This project includes infrastructure as code (IaC) to provision Azure OpenAI dep
 
 ## Resources
 
-* [AutoGen Documentation](https://microsoft.github.io/autogen/)
 * [LangGraph Documentation](https://langchain-ai.github.io/langgraph/tutorials/introduction/)
 * [LlamaIndex Documentation](https://docs.llamaindex.ai/en/latest/)
 * [OpenAI Agents Documentation](https://openai.github.io/openai-agents-python/)
