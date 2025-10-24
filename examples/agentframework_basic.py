@@ -15,7 +15,7 @@ async_credential = None
 if API_HOST == "azure":
     async_credential = DefaultAzureCredential()
     token_provider = get_bearer_token_provider(async_credential, "https://cognitiveservices.azure.com/.default")
-    client = OpenAIChatClient(base_url=os.environ["AZURE_OPENAI_ENDPOINT"] + "/openai/v1/", api_key=token_provider, model_id=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"])
+    client = OpenAIChatClient(base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT']}/openai/v1/", api_key=token_provider, model_id=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"])
 elif API_HOST == "github":
     client = OpenAIChatClient(base_url="https://models.github.ai/inference", api_key=os.environ["GITHUB_TOKEN"], model_id=os.getenv("GITHUB_MODEL", "openai/gpt-4o"))
 elif API_HOST == "ollama":
