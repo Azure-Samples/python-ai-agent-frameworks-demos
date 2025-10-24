@@ -7,8 +7,7 @@ from typing import Annotated
 
 from agent_framework import ChatAgent
 from agent_framework.openai import OpenAIChatClient
-from azure.identity import DefaultAzureCredential
-from azure.identity.aio import get_bearer_token_provider
+from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
 from pydantic import Field
 from rich import print
@@ -23,11 +22,15 @@ logger.setLevel(logging.INFO)
 # Configure OpenAI client based on environment
 load_dotenv(override=True)
 API_HOST = os.getenv("API_HOST", "github")
+
+async_credential = None
 if API_HOST == "azure":
+    async_credential = DefaultAzureCredential()
+    token_provider = get_bearer_token_provider(async_credential, "https://cognitiveservices.azure.com/.default")
     client = OpenAIChatClient(
-        base_url=os.environ.get("AZURE_OPENAI_ENDPOINT") + "/openai/v1/",
-        api_key=get_bearer_token_provider(DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"),
-        model_id=os.environ.get("AZURE_OPENAI_CHAT_DEPLOYMENT"),
+        base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT']}/openai/v1/",
+        api_key=token_provider,
+        model_id=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
 elif API_HOST == "github":
     client = OpenAIChatClient(
@@ -42,7 +45,7 @@ elif API_HOST == "ollama":
         model_id=os.environ.get("OLLAMA_MODEL", "llama3.1:latest"),
     )
 else:
-    client = OpenAIChatClient(api_key=os.environ.get("OPENAI_API_KEY"), model_id=os.environ.get("OPENAI_MODEL", "gpt-4o"))
+    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-4o"))
 
 
 def get_weather(
@@ -83,7 +86,10 @@ def get_current_date() -> str:
 
 agent = ChatAgent(
     chat_client=client,
-    instructions=("You help users plan their weekends and choose the best activities for the given weather. " "If an activity would be unpleasant in weather, don't suggest it. Include date of the weekend in response."),
+    instructions=(
+        "You help users plan their weekends and choose the best activities for the given weather. "
+        "If an activity would be unpleasant in weather, don't suggest it. Include date of the weekend in response."
+    ),
     tools=[get_weather, get_activities, get_current_date],
 )
 
@@ -91,6 +97,9 @@ agent = ChatAgent(
 async def main():
     response = await agent.run("hii what can I do this weekend in San Francisco?")
     print(response.text)
+
+    if async_credential:
+        await async_credential.close()
 
 
 if __name__ == "__main__":

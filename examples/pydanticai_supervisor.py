@@ -3,8 +3,7 @@ import os
 import random
 from typing import Literal
 
-from azure.identity import DefaultAzureCredential
-from azure.identity.aio import get_bearer_token_provider
+from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
 from openai import AsyncOpenAI
 from pydantic import BaseModel
@@ -24,21 +23,24 @@ agent that can call a weather tool.
 load_dotenv(override=True)
 API_HOST = os.getenv("API_HOST", "github")
 
-if API_HOST == "github":
-    client = AsyncOpenAI(api_key=os.environ["GITHUB_TOKEN"], base_url="https://models.inference.ai.azure.com")
-    base_model = OpenAIChatModel(os.getenv("GITHUB_MODEL", "gpt-4o"), provider=OpenAIProvider(openai_client=client))
-elif API_HOST == "azure":
-    token_provider = get_bearer_token_provider(DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default")
+async_credential = None
+if API_HOST == "azure":
+    async_credential = DefaultAzureCredential()
+    token_provider = get_bearer_token_provider(async_credential, "https://cognitiveservices.azure.com/.default")
     client = AsyncOpenAI(
         base_url=os.environ["AZURE_OPENAI_ENDPOINT"] + "/openai/v1",
         api_key=token_provider,
     )
-    base_model = OpenAIChatModel(os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"], provider=OpenAIProvider(openai_client=client))
+    model = OpenAIChatModel(os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"], provider=OpenAIProvider(openai_client=client))
+elif API_HOST == "github":
+    client = AsyncOpenAI(api_key=os.environ["GITHUB_TOKEN"], base_url="https://models.inference.ai.azure.com")
+    model = OpenAIChatModel(os.getenv("GITHUB_MODEL", "gpt-4o"), provider=OpenAIProvider(openai_client=client))
 elif API_HOST == "ollama":
     client = AsyncOpenAI(base_url=os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1"), api_key="none")
-    base_model = OpenAIChatModel(os.environ["OLLAMA_MODEL"], provider=OpenAIProvider(openai_client=client))
+    model = OpenAIChatModel(os.environ["OLLAMA_MODEL"], provider=OpenAIProvider(openai_client=client))
 else:
-    raise ValueError(f"Unsupported API_HOST: {API_HOST}")
+    client = AsyncOpenAI(api_key=os.environ["OPENAI_API_KEY"])
+    model = OpenAIChatModel(os.environ.get("OPENAI_MODEL", "gpt-4o"), provider=OpenAIProvider(openai_client=client))
 
 
 class Weather(BaseModel):
@@ -62,21 +64,27 @@ async def get_weather(ctx: RunContext[None], city: str) -> Weather:
 
 
 spanish_weather_agent = Agent(
-    base_model,
+    model,
     tools=[get_weather],
-    system_prompt=("Eres un agente del clima. Solo respondes en español con información del tiempo para la ciudad pedida. " "Usa la herramienta 'get_weather' para obtener datos. Devuelve una respuesta breve y clara."),
+    system_prompt=(
+        "Eres un agente del clima. Solo respondes en español con información del tiempo para la ciudad pedida. "
+        "Usa la herramienta 'get_weather' para obtener datos. Devuelve una respuesta breve y clara."
+    ),
 )
 
 english_weather_agent = Agent(
-    base_model,
+    model,
     tools=[get_weather],
-    system_prompt=("You are a weather agent. You only respond in English with weather info for the requested city. " "Use the 'get_weather' tool to fetch data. Keep responses concise."),
+    system_prompt=(
+        "You are a weather agent. You only respond in English with weather info for the requested city. "
+        "Use the 'get_weather' tool to fetch data. Keep responses concise."
+    ),
 )
 
 
 # Triage agent decides which language agent should handle the request
 triage_agent = Agent(
-    base_model,
+    model,
     output_type=TriageResult,
     system_prompt=(
         "You are a triage agent. Determine whether the user's request is primarily in Spanish or English. "
@@ -96,6 +104,9 @@ async def main():
     else:
         weather_result = await english_weather_agent.run(user_input)
     print(weather_result.output)
+
+    if async_credential:
+        await async_credential.close()
 
 
 if __name__ == "__main__":

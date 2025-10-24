@@ -1,12 +1,10 @@
 import asyncio
 import os
 
-import openai
 from agents import Agent, OpenAIChatCompletionsModel, Runner, function_tool, set_tracing_disabled
-from agents.extensions.visualization import draw_graph
-from azure.identity import DefaultAzureCredential
-from azure.identity.aio import get_bearer_token_provider
+from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
+from openai import AsyncOpenAI
 
 # Desactivamos el rastreo ya que no estamos usando modelos de OpenAI.com
 set_tracing_disabled(disabled=True)
@@ -15,16 +13,24 @@ set_tracing_disabled(disabled=True)
 load_dotenv(override=True)
 API_HOST = os.getenv("API_HOST", "github")
 
-if API_HOST == "github":
-    client = openai.AsyncOpenAI(base_url="https://models.inference.ai.azure.com", api_key=os.environ["GITHUB_TOKEN"])
-    MODEL_NAME = os.getenv("GITHUB_MODEL", "gpt-4o")
-elif API_HOST == "azure":
-    token_provider = get_bearer_token_provider(DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default")
-    client = openai.AsyncOpenAI(
+async_credential = None
+if API_HOST == "azure":
+    async_credential = DefaultAzureCredential()
+    token_provider = get_bearer_token_provider(async_credential, "https://cognitiveservices.azure.com/.default")
+    client = AsyncOpenAI(
         base_url=os.environ["AZURE_OPENAI_ENDPOINT"] + "/openai/v1",
         api_key=token_provider,
     )
     MODEL_NAME = os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"]
+elif API_HOST == "github":
+    client = AsyncOpenAI(api_key=os.environ["GITHUB_TOKEN"], base_url="https://models.inference.ai.azure.com")
+    MODEL_NAME = os.getenv("GITHUB_MODEL", "gpt-4o")
+elif API_HOST == "ollama":
+    client = AsyncOpenAI(base_url=os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1"), api_key="none")
+    MODEL_NAME = os.environ["OLLAMA_MODEL"]
+else:
+    client = AsyncOpenAI(api_key=os.environ["OPENAI_API_KEY"])
+    MODEL_NAME = os.environ.get("OPENAI_MODEL", "gpt-4o")
 
 
 @function_tool
@@ -37,27 +43,27 @@ def get_weather(city: str) -> str:
 
 
 agent = Agent(
-    name="Agente del clima",
+    name="agente_clima",
     instructions="Solo puedes proporcionar información del clima.",
     tools=[get_weather],
 )
 
 spanish_agent = Agent(
-    name="Agente en español",
+    name="agente_es",
     instructions="Solo hablas español.",
     tools=[get_weather],
     model=OpenAIChatCompletionsModel(model=MODEL_NAME, openai_client=client),
 )
 
 english_agent = Agent(
-    name="Agente en inglés",
+    name="agente_en",
     instructions="Solo hablas inglés",
     tools=[get_weather],
     model=OpenAIChatCompletionsModel(model=MODEL_NAME, openai_client=client),
 )
 
 triage_agent = Agent(
-    name="Agente de clasificación",
+    name="agente_clasificación",
     instructions="Transfiere al agente apropiado según el idioma de la solicitud.",
     handoffs=[spanish_agent, english_agent],
     model=OpenAIChatCompletionsModel(model=MODEL_NAME, openai_client=client),
@@ -66,11 +72,10 @@ triage_agent = Agent(
 
 async def main():
     result = await Runner.run(triage_agent, input="Hola, ¿cómo estás? ¿Puedes darme el clima para Cuenca, Ecuador?")
-    gz_source = draw_graph(triage_agent, filename="openai_agents_handoffs.png")
-    # guardamos el grafo en un archivo en formato graphviz
-    gz_source.save("openai_agents_handoffs.dot")
-
     print(result.final_output)
+
+    if async_credential:
+        await async_credential.close()
 
 
 if __name__ == "__main__":

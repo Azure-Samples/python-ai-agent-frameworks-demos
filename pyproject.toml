@@ -1,5 +1,5 @@
 [tool.ruff]
-line-length = 240
+line-length = 120
 target-version = "py310"
 lint.select = ["E", "F", "I", "UP"]
 lint.ignore = ["D203"]
