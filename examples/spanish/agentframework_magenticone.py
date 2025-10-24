@@ -28,13 +28,26 @@ async_credential = None
 if API_HOST == "azure":
     async_credential = DefaultAzureCredential()
     token_provider = get_bearer_token_provider(async_credential, "https://cognitiveservices.azure.com/.default")
-    client = OpenAIChatClient(base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT']}/openai/v1/", api_key=token_provider, model_id=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"])
+    client = OpenAIChatClient(
+        base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT']}/openai/v1/",
+        api_key=token_provider,
+        model_id=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
+    )
 elif API_HOST == "github":
-    client = OpenAIChatClient(base_url="https://models.github.ai/inference", api_key=os.environ["GITHUB_TOKEN"], model_id=os.getenv("GITHUB_MODEL", "openai/gpt-4o"))
+    client = OpenAIChatClient(
+        base_url="https://models.github.ai/inference",
+        api_key=os.environ["GITHUB_TOKEN"],
+        model_id=os.getenv("GITHUB_MODEL", "openai/gpt-4o"),
+    )
 elif API_HOST == "ollama":
-    client = OpenAIChatClient(base_url=os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1"), api_key="none", model_id=os.environ.get("OLLAMA_MODEL", "llama3.1:latest"))
+    client = OpenAIChatClient(
+        base_url=os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1"),
+        api_key="none",
+        model_id=os.environ.get("OLLAMA_MODEL", "llama3.1:latest"),
+    )
 else:
     client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-4o"))
+
 
 # Initializar la consola rich
 console = Console()
@@ -42,7 +55,10 @@ console = Console()
 # Crear los agentes
 agente_local = ChatAgent(
     chat_client=client,
-    instructions=("Sos un asistente útil que puede sugerir actividades locales auténticas e interesantes " "o lugares para visitar para un usuario y puede utilizar cualquier información de contexto proporcionada."),
+    instructions=(
+        "Sos un asistente útil que puede sugerir actividades locales auténticas e interesantes "
+        "o lugares para visitar para un usuario y puede utilizar cualquier información de contexto proporcionada."
+    ),
     name="agente_local",
     description="Un asistente local que puede sugerir actividades locales o lugares para visitar.",
 )
@@ -50,7 +66,7 @@ agente_local = ChatAgent(
 agente_idioma = ChatAgent(
     chat_client=client,
     instructions=(
-        "Sos un asistente útil que puede revisar planes de viaje, brindando comentarios sobre consejos importantes/críticos "
+        "Sos un asistente útil que puede revisar planes de viaje, brindando comentarios sobre consejos importantes"
         "sobre cómo abordar mejor los desafíos de idioma o comunicación para el destino dado. "
         "Si el plan ya incluye consejos de idioma, podés mencionar que el plan es satisfactorio, con justificación."
     ),
@@ -62,7 +78,7 @@ agente_resumen_viaje = ChatAgent(
     chat_client=client,
     instructions=(
         "Sos un asistente útil que puede tomar todas las sugerencias y consejos de los otros agentes "
-        "y proporcionar un plan de viaje final detallado. Debes asegurarte de que el plan final esté integrado y completo. "
+        "y proporcionar un plan de viaje final detallado. Debes asegurarte de que el plan esté integrado y completo."
         "TU RESPUESTA FINAL DEBE SER EL PLAN COMPLETO. Proporciona un resumen exhaustivo cuando todas las perspectivas "
         "de otros agentes se hayan integrado."
     ),
