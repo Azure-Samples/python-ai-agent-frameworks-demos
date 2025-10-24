@@ -23,10 +23,12 @@ Este repositorio ofrece ejemplos de muchos frameworks populares de agentes de IA
   * [GitHub Codespaces](#github-codespaces)
   * [VS Code Dev Containers](#vs-code-dev-containers)
   * [Entorno local](#entorno-local)
+* [Configurar proveedores de modelos](#configurar-proveedores-de-modelos)
+  * [Usar GitHub Models](#usar-github-models)
+  * [Usar modelos de Azure OpenAI](#usar-modelos-de-azure-openai)
+  * [Usar modelos de OpenAI.com](#usar-modelos-de-openaicom)
+  * [Usar modelos de Ollama](#usar-modelos-de-ollama)
 * [Ejecutar los ejemplos en Python](#ejecutar-los-ejemplos-en-python)
-* [Guía](#guía)
-  * [Costos](#costos)
-  * [Pautas de seguridad](#pautas-de-seguridad)
 * [Recursos](#recursos)
 
 ## Cómo empezar
@@ -68,14 +70,14 @@ Una opción relacionada es VS Code Dev Containers, que abrirá el proyecto en tu
 
     ```shell
     git clone https://github.com/Azure-Samples/python-ai-agent-frameworks-demos
-    cd python-ai-agents-demos
+    cd python-ai-agent-frameworks-demos
     ```
 
 3. Configura un entorno virtual:
 
     ```shell
-    python -m venv venv
-    source venv/bin/activate  # En Windows: venv\Scripts\activate
+    python -m venv .venv
+    source .venv/bin/activate  # En Windows: .venv\Scripts\activate
     ```
 
 4. Instala los requisitos:
@@ -84,89 +86,11 @@ Una opción relacionada es VS Code Dev Containers, que abrirá el proyecto en tu
     pip install -r requirements.txt
     ```
 
-## Ejecutar los ejemplos en Python
+## Configurar proveedores de modelos
 
-Podés ejecutar los ejemplos en este repositorio ejecutando los scripts en el directorio `examples/spanish`. Cada script demuestra un patrón o framework diferente de agente de IA.
+Estos ejemplos se pueden ejecutar con una cuenta de Azure OpenAI, OpenAI.com, servidor local de Ollama o modelos de GitHub, dependiendo de las variables de entorno que configures. Todos los scripts hacen referencia a las variables de entorno de un archivo `.env`, y se proporciona un archivo de ejemplo `.env.sample`. Las instrucciones específicas de cada proveedor se encuentran a continuación.
 
-### Microsoft Agent Framework
-
-| Ejemplo | Descripción |
-| ------- | ----------- |
-| [agentframework_basic.py](agentframework_basic.py) | Usa Agent Framework para crear un agente informativo básico. |
-| [agentframework_tool.py](agentframework_tool.py) | Usa Agent Framework para crear un agente con una única herramienta de clima. |
-| [agentframework_tools.py](agentframework_tools.py) | Usa Agent Framework para crear un agente planificador de fin de semana con múltiples herramientas. |
-| [agentframework_supervisor.py](agentframework_supervisor.py) | Usa Agent Framework con un supervisor que orquesta subagentes de actividades y recetas. |
-
-### LangChain v1 y LangGraph
-
-| Ejemplo | Descripción |
-| ------- | ----------- |
-| [langchainv1_basic.py](langchainv1_basic.py) | Usa LangChain v1 para crear un agente informativo básico. |
-| [langchainv1_tool.py](langchainv1_tool.py) | Usa LangChain v1 para crear un agente con una única herramienta de clima. |
-| [langchainv1_tools.py](langchainv1_tools.py) | Usa LangChain v1 para crear un agente planificador de fin de semana con múltiples herramientas. |
-| [langchainv1_supervisor.py](langchainv1_supervisor.py) | Usa LangChain v1 con un supervisor orquestando subagentes de actividades y recetas. |
-| [langchainv1_quickstart.py](langchainv1_quickstart.py) | Usa LangChain v1 para crear un asistente con llamadas de herramientas, salida estructurada y memoria. Basado en los documentos oficiales de Inicio Rápido. |
-| [langchainv1_mcp_github.py](langchainv1_mcp_github.py) | Usa agente Langchain v1 con servidor MCP de GitHub para triar issues del repositorio. |
-| [langchainv1_mcp_http.py](langchainv1_mcp_http.py) | Usa agente Langchain v1 con herramientas de un servidor MCP HTTP local. |
-| [langgraph_agent.py](langgraph_agent.py) | Construye un grafo LangGraph para un agente que reproduce canciones. |
-| [langgraph_mcp.py](langgraph_mcp.py) | Construye un grafo Langgraph que usa herramientas de un servidor MCP HTTP. |
-
-### OpenAI y OpenAI Agents
-
-| Ejemplo | Descripción |
-| ------- | ----------- |
-| [openai_githubmodels.py](openai_githubmodels.py) | Configuración básica para usar modelos de GitHub con la API de OpenAI. |
-| [openai_functioncalling.py](openai_functioncalling.py) | Usa OpenAI Function Calling para llamar funciones basadas en la salida del LLM. |
-| [openai_agents_basic.py](openai_agents_basic.py) | Usa el framework de Agentes de OpenAI para crear un agente único. |
-| [openai_agents_handoffs.py](openai_agents_handoffs.py) | Usa el framework de Agentes de OpenAI para transferir entre varios agentes con herramientas. |
-| [openai_agents_tools.py](openai_agents_tools.py) | Usa el framework de Agentes de OpenAI para crear un planificador de fin de semana con herramientas. |
-| [openai_agents_mcp_http.py](openai_agents_mcp_http.py) | Usa el framework de Agentes de OpenAI con un servidor MCP HTTP (herramientas de planificación de viajes). |
-
-### PydanticAI
-
-| Ejemplo | Descripción |
-| ------- | ----------- |
-| [pydanticai_basic.py](pydanticai_basic.py) | Usa PydanticAI para construir un agente único básico (tutor de inglés). |
-| [pydanticai_multiagent.py](pydanticai_multiagent.py) | Usa PydanticAI para construir un flujo secuencial de dos agentes (vuelo + selección de asiento). |
-| [pydanticai_graph.py](pydanticai_graph.py) | Usa PydanticAI con pydantic-graph para construir un pequeño grafo de evaluación pregunta/respuesta. |
-| [pydanticai_tools.py](pydanticai_tools.py) | Usa PydanticAI con múltiples herramientas de Python para planificar actividades de fin de semana. |
-| [pydanticai_mcp_http.py](pydanticai_mcp_http.py) | Usa PydanticAI con un conjunto de herramientas de servidor MCP HTTP para planificación de viajes (búsqueda de hoteles). |
-| [pydanticai_mcp_github.py](pydanticai_mcp_github.py) | Usa PydanticAI con un conjunto de herramientas de servidor MCP de GitHub para triar issues del repositorio. |
-| [pydanticai_supervisor.py](pydanticai_supervisor.py) | Usa PydanticAI con patrón de triaje/supervisor que traspasa entre agentes del clima en español e inglés. |
-
-### AutoGen
-
-| Ejemplo | Descripción |
-| ------- | ----------- |
-| [autogen_basic.py](autogen_basic.py) | Usa AutoGen para crear un agente tutor de inglés básico. |
-| [autogen_tools.py](autogen_tools.py) | Usa AutoGen para crear un agente planificador de fin de semana con herramientas. |
-| [autogen_swarm.py](autogen_swarm.py) | Usa AutoGen con patrón Swarm para transferir entre múltiples agentes. |
-| [autogen_magenticone.py](autogen_magenticone.py) | Usa AutoGen con patrón MagenticOne para resolver problemas complejos con múltiples agentes. |
-
-### Semantic Kernel
-
-| Ejemplo | Descripción |
-| ------- | ----------- |
-| [semantickernel_basic.py](semantickernel_basic.py) | Usa Semantic Kernel para crear un agente básico con chat de dos turnos. |
-| [semantickernel_groupchat.py](semantickernel_groupchat.py) | Usa Semantic Kernel para crear un chat grupal con múltiples agentes que colaboran. |
-| [semantickernel_mcp_http.py](semantickernel_mcp_http.py) | Usa Semantic Kernel con herramientas de servidor MCP HTTP para planificación de viajes. |
-
-### Azure AI
-
-| Ejemplo | Descripción |
-| ------- | ----------- |
-| [azureai_githubmodels.py](azureai_githubmodels.py) | Usa Azure AI Inference SDK con modelos de GitHub. |
-| [azureai_azureopenai.py](azureai_azureopenai.py) | Usa Azure AI Inference SDK con Azure OpenAI. |
-
-### Otros frameworks
-
-| Ejemplo | Descripción |
-| ------- | ----------- |
-| [llamaindex.py](llamaindex.py) | Usa LlamaIndex para construir un agente ReAct para RAG en múltiples índices. |
-| [smolagents_codeagent.py](smolagents_codeagent.py) | Usa SmolAgents para construir un agente de respuesta a preguntas que puede buscar en la web y ejecutar código. |
-| [mcp_server_basic.py](mcp_server_basic.py) | Servidor MCP HTTP básico con herramientas de búsqueda de hoteles (prerequisito para varios ejemplos MCP). |
-
-## Configurar GitHub Models
+## Usar GitHub Models
 
 Si abres este repositorio en GitHub Codespaces, podés ejecutar los scripts gratis usando GitHub Models sin pasos adicionales, ya que tu `GITHUB_TOKEN` ya está configurado en el entorno de Codespaces.
 
@@ -186,9 +110,9 @@ Si querés ejecutar los scripts localmente, necesitás configurar la variable de
     export GITHUB_TOKEN=tu_token_de_acceso_personal
     ```
 
-10. Opcionalmente, podés usar un modelo diferente a "gpt-4o" configurando la variable de entorno `GITHUB_MODEL`. Usa un modelo que soporte llamadas de funciones, como: `gpt-4o`, `gpt-4o-mini`, `o3-mini`, `AI21-Jamba-1.5-Large`, `AI21-Jamba-1.5-Mini`, `Codestral-2501`, `Cohere-command-r`, `Ministral-3B`, `Mistral-Large-2411`, `Mistral-Nemo`, `Mistral-small`
+10. Opcionalmente, podés usar un modelo diferente a "gpt-4o" configurando la variable de entorno `GITHUB_MODEL`. Usa un modelo que soporte llamadas de funciones, como: `gpt-5`, `gpt-5-mini`, `gpt-4o`, `gpt-4o-mini`, `o3-mini`, `AI21-Jamba-1.5-Large`, `AI21-Jamba-1.5-Mini`, `Codestral-2501`, `Cohere-command-r`, `Ministral-3B`, `Mistral-Large-2411`, `Mistral-Nemo`, `Mistral-small`
 
-## Provisionar recursos de Azure AI
+## Usar modelos de Azure OpenAI
 
 Podés ejecutar todos los ejemplos en este repositorio usando GitHub Models. Si querés ejecutar los ejemplos usando modelos de Azure OpenAI, necesitás provisionar los recursos de Azure AI, lo que generará costos.
 
@@ -223,12 +147,113 @@ Este proyecto incluye infraestructura como código (IaC) para provisionar despli
     azd down
     ```
 
+## Usar modelos de OpenAI.com
+
+1. Crea un archivo `.env` copiando el archivo `.env.sample` y actualizándolo con tu clave API de OpenAI y el nombre del modelo deseado.
+
+    ```bash
+    cp .env.sample .env
+    ```
+
+2. Actualiza el archivo `.env` con tu clave API de OpenAI y el nombre del modelo deseado:
+
+    ```bash
+    API_HOST=openai
+    OPENAI_API_KEY=tu_clave_api_de_openai
+    OPENAI_MODEL=gpt-4o-mini
+    ```
+
+## Usar modelos de Ollama
+
+1. Instala [Ollama](https://ollama.com/) y sigue las instrucciones para configurarlo en tu máquina local.
+2. Descarga un modelo, por ejemplo:
+
+    ```shell
+    ollama pull qwen3:30b
+    ```
+
+    Ten en cuenta que la mayoría de los modelos no soportan llamadas de herramientas en la medida requerida por los frameworks de agentes, así que elige un modelo en consecuencia.
+
+3. Crea un archivo `.env` copiando el archivo `.env.sample` y actualizándolo con tu endpoint de Ollama y nombre de modelo.
+
+    ```bash
+    cp .env.sample .env
+    ```
+
+4. Actualiza el archivo `.env` con tu endpoint de Ollama y nombre de modelo (cualquier modelo que hayas descargado):
+
+    ```bash
+    API_HOST=ollama
+    OLLAMA_ENDPOINT=http://localhost:11434/v1
+    OLLAMA_MODEL=llama3.1
+    ```
+
+## Ejecutar los ejemplos en Python
+
+Podés ejecutar los ejemplos en este repositorio ejecutando los scripts en el directorio `examples/spanish`. Cada script demuestra un patrón o framework diferente de agente de IA.
+
+### Microsoft Agent Framework
+
+| Ejemplo | Descripción |
+| ------- | ----------- |
+| [agentframework_basic.py](agentframework_basic.py) | Usa Agent Framework para crear un agente informativo básico. |
+| [agentframework_tool.py](agentframework_tool.py) | Usa Agent Framework para crear un agente con una única herramienta de clima. |
+| [agentframework_tools.py](agentframework_tools.py) | Usa Agent Framework para crear un agente planificador de fin de semana con múltiples herramientas. |
+| [agentframework_supervisor.py](agentframework_supervisor.py) | Usa Agent Framework con un supervisor que orquesta subagentes de actividades y recetas. |
+| [agentframework_magenticone.py](agentframework_magenticone.py) | Usa Agent Framework para crear un agente MagenticOne. |
+| [agentframework_workflow.py](agentframework_workflow.py) | Usa Agent Framework para crear un agente basado en flujo de trabajo. |
+
+### LangChain v1 y LangGraph
+
+| Ejemplo | Descripción |
+| ------- | ----------- |
+| [langchainv1_basic.py](langchainv1_basic.py) | Usa LangChain v1 para crear un agente informativo básico. |
+| [langchainv1_tool.py](langchainv1_tool.py) | Usa LangChain v1 para crear un agente con una única herramienta de clima. |
+| [langchainv1_tools.py](langchainv1_tools.py) | Usa LangChain v1 para crear un agente planificador de fin de semana con múltiples herramientas. |
+| [langchainv1_supervisor.py](langchainv1_supervisor.py) | Usa LangChain v1 con un supervisor orquestando subagentes de actividades y recetas. |
+| [langchainv1_quickstart.py](langchainv1_quickstart.py) | Usa LangChain v1 para crear un asistente con llamadas de herramientas, salida estructurada y memoria. Basado en los documentos oficiales de Inicio Rápido. |
+| [langchainv1_mcp_github.py](langchainv1_mcp_github.py) | Usa agente Langchain v1 con servidor MCP de GitHub para triar issues del repositorio. |
+| [langchainv1_mcp_http.py](langchainv1_mcp_http.py) | Usa agente Langchain v1 con herramientas de un servidor MCP HTTP local. |
+| [langgraph_agent.py](langgraph_agent.py) | Construye un grafo LangGraph para un agente que reproduce canciones. |
+| [langgraph_mcp.py](langgraph_mcp.py) | Construye un grafo Langgraph que usa herramientas de un servidor MCP HTTP. |
+
+### OpenAI y OpenAI Agents
+
+| Ejemplo | Descripción |
+| ------- | ----------- |
+| [openai_githubmodels.py](openai_githubmodels.py) | Configuración básica para usar modelos de GitHub con la API de OpenAI. |
+| [openai_functioncalling.py](openai_functioncalling.py) | Usa OpenAI Function Calling para llamar funciones basadas en la salida del LLM. |
+| [openai_agents_basic.py](openai_agents_basic.py) | Usa el framework de Agentes de OpenAI para crear un agente único. |
+| [openai_agents_handoffs.py](openai_agents_handoffs.py) | Usa el framework de Agentes de OpenAI para transferir entre varios agentes con herramientas. |
+| [openai_agents_tools.py](openai_agents_tools.py) | Usa el framework de Agentes de OpenAI para crear un planificador de fin de semana con herramientas. |
+| [openai_agents_mcp_http.py](openai_agents_mcp_http.py) | Usa el framework de Agentes de OpenAI con un servidor MCP HTTP (herramientas de planificación de viajes). |
+
+### PydanticAI
+
+| Ejemplo | Descripción |
+| ------- | ----------- |
+| [pydanticai_basic.py](pydanticai_basic.py) | Usa PydanticAI para construir un agente único básico (tutor de español). |
+| [pydanticai_multiagent.py](pydanticai_multiagent.py) | Usa PydanticAI para construir un flujo secuencial de dos agentes (vuelo + selección de asiento). |
+| [pydanticai_supervisor.py](pydanticai_supervisor.py) | Usa PydanticAI con un supervisor orquestando múltiples agentes. |
+| [pydanticai_graph.py](pydanticai_graph.py) | Usa PydanticAI con pydantic-graph para construir un pequeño grafo de evaluación pregunta/respuesta. |
+| [pydanticai_tools.py](pydanticai_tools.py) | Usa PydanticAI con múltiples herramientas de Python para planificar actividades de fin de semana. |
+| [pydanticai_mcp_http.py](pydanticai_mcp_http.py) | Usa PydanticAI con un conjunto de herramientas de servidor MCP HTTP para planificación de viajes (búsqueda de hoteles). |
+| [pydanticai_mcp_github.py](pydanticai_mcp_github.py) | Usa PydanticAI con un conjunto de herramientas de servidor MCP de GitHub para triar issues del repositorio. |
+
+### Otros frameworks
+
+| Ejemplo | Descripción |
+| ------- | ----------- |
+| [llamaindex.py](llamaindex.py) | Usa LlamaIndex para construir un agente ReAct para RAG en múltiples índices. |
+| [smolagents_codeagent.py](smolagents_codeagent.py) | Usa SmolAgents para construir un agente de respuesta a preguntas que puede buscar en la web y ejecutar código. |
+
 ## Recursos
 
-* [Documentación de LangGraph](https://langchain-ai.github.io/langgraph/tutorials/introduction/)
+* [Documentación de Agent Framework](https://learn.microsoft.com/agent-framework/)
+* [Documentación de Langchain v1](https://docs.langchain.com/oss/python/langchain/overview)
+* [Documentación de LangGraph](https://docs.langchain.com/oss/python/langgraph/overview)
 * [Documentación de LlamaIndex](https://docs.llamaindex.ai/en/latest/)
 * [Documentación de OpenAI Agents](https://openai.github.io/openai-agents-python/)
 * [Documentación de OpenAI Function Calling](https://platform.openai.com/docs/guides/function-calling?api-mode=chat)
-* [Documentación de PydanticAI](https://ai.pydantic.dev/multi-agent-applications/)
-* [Documentación de Semantic Kernel](https://learn.microsoft.com/semantic-kernel/overview/)
+* [Documentación de Pydantic AI](https://ai.pydantic.dev/multi-agent-applications/)
 * [Documentación de SmolAgents](https://huggingface.co/docs/smolagents/index)
