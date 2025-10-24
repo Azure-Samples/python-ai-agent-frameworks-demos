@@ -232,7 +232,7 @@ Podés ejecutar los ejemplos en este repositorio ejecutando los scripts en el di
 
 | Ejemplo | Descripción |
 | ------- | ----------- |
-| [pydanticai_basic.py](pydanticai_basic.py) | Usa PydanticAI para construir un agente único básico (tutor de español). |
+| [pydanticai_basic.py](pydanticai_basic.py) | Usa PydanticAI para construir un agente único básico (tutor de inglés). |
 | [pydanticai_multiagent.py](pydanticai_multiagent.py) | Usa PydanticAI para construir un flujo secuencial de dos agentes (vuelo + selección de asiento). |
 | [pydanticai_supervisor.py](pydanticai_supervisor.py) | Usa PydanticAI con un supervisor orquestando múltiples agentes. |
 | [pydanticai_graph.py](pydanticai_graph.py) | Usa PydanticAI con pydantic-graph para construir un pequeño grafo de evaluación pregunta/respuesta. |

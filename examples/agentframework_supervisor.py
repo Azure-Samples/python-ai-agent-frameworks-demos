@@ -24,8 +24,6 @@ load_dotenv(override=True)
 API_HOST = os.getenv("API_HOST", "github")
 
 async_credential = None
-
-async_credential = None
 if API_HOST == "azure":
     async_credential = DefaultAzureCredential()
     token_provider = get_bearer_token_provider(async_credential, "https://cognitiveservices.azure.com/.default")

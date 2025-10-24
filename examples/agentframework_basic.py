@@ -42,7 +42,7 @@ async def main():
     response = await agent.run("Whats weather today in San Francisco?")
     print(response.text)
 
-    if async_credential is not None:
+    if async_credential:
         await async_credential.close()
 
 
