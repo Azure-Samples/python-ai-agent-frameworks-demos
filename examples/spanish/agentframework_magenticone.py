@@ -6,7 +6,6 @@ import os
 
 from agent_framework import (
     ChatAgent,
-    MagenticAgentDeltaEvent,
     MagenticAgentMessageEvent,
     MagenticBuilder,
     MagenticCallbackEvent,
@@ -14,42 +13,29 @@ from agent_framework import (
     MagenticOrchestratorMessageEvent,
     WorkflowOutputEvent,
 )
-from agent_framework.azure import AzureOpenAIChatClient
 from agent_framework.openai import OpenAIChatClient
-from azure.identity import DefaultAzureCredential
+from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
-from rich.text import Text
 
-# Configurar el cliente para usar Azure OpenAI o GitHub Models
+# Configurar el cliente para usar Azure OpenAI, GitHub Models, Ollama o OpenAI
 load_dotenv(override=True)
 API_HOST = os.getenv("API_HOST", "github")
 
+async_credential = None
 if API_HOST == "azure":
-    client = AzureOpenAIChatClient(
-        credential=DefaultAzureCredential(),
-        deployment_name=os.environ.get("AZURE_OPENAI_CHAT_DEPLOYMENT"),
-        endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT"),
-        api_version=os.environ.get("AZURE_OPENAI_VERSION"),
+    async_credential = DefaultAzureCredential()
+    client = OpenAIChatClient(
+        base_url=os.environ.get("AZURE_OPENAI_ENDPOINT") + "/openai/v1/", api_key=get_bearer_token_provider(async_credential, "https://cognitiveservices.azure.com/.default"), model_id=os.environ.get("AZURE_OPENAI_CHAT_DEPLOYMENT")
     )
 elif API_HOST == "github":
-    client = OpenAIChatClient(
-        base_url="https://models.github.ai/inference",
-        api_key=os.environ["GITHUB_TOKEN"],
-        model_id=os.getenv("GITHUB_MODEL", "openai/gpt-4o"),
-    )
+    client = OpenAIChatClient(base_url="https://models.github.ai/inference", api_key=os.environ["GITHUB_TOKEN"], model_id=os.getenv("GITHUB_MODEL", "openai/gpt-4o"))
 elif API_HOST == "ollama":
-    client = OpenAIChatClient(
-        base_url=os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1"),
-        api_key="none",
-        model_id=os.environ.get("OLLAMA_MODEL", "llama3.1:latest"),
-    )
+    client = OpenAIChatClient(base_url=os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1"), api_key="none", model_id=os.environ.get("OLLAMA_MODEL", "llama3.1:latest"))
 else:
-    client = OpenAIChatClient(
-        api_key=os.environ.get("OPENAI_API_KEY"), model_id=os.environ.get("OPENAI_MODEL", "gpt-4o")
-    )
+    client = OpenAIChatClient(api_key=os.environ.get("OPENAI_API_KEY"), model_id=os.environ.get("OPENAI_MODEL", "gpt-4o"))
 
 # Initializar la consola rich
 console = Console()
@@ -57,10 +43,7 @@ console = Console()
 # Crear los agentes
 agente_local = ChatAgent(
     chat_client=client,
-    instructions=(
-        "Sos un asistente útil que puede sugerir actividades locales auténticas e interesantes "
-        "o lugares para visitar para un usuario y puede utilizar cualquier información de contexto proporcionada."
-    ),
+    instructions=("Sos un asistente útil que puede sugerir actividades locales auténticas e interesantes " "o lugares para visitar para un usuario y puede utilizar cualquier información de contexto proporcionada."),
     name="agente_local",
     description="Un asistente local que puede sugerir actividades locales o lugares para visitar.",
 )
@@ -130,7 +113,7 @@ orquestador_magentico = (
 )
 
 
-async def main():    
+async def main():
     async for event in orquestador_magentico.run_stream("Planificá un viaje de medio día a Costa Rica"):
         if isinstance(event, WorkflowOutputEvent):
             resultado_final = event.data
@@ -142,6 +125,9 @@ async def main():
                     padding=(1, 2),
                 )
             )
+    if async_credential:
+        await async_credential.close()
+
 
 if __name__ == "__main__":
     asyncio.run(main())
