@@ -7,25 +7,30 @@ from typing import Annotated
 
 from agent_framework import ChatAgent
 from agent_framework.openai import OpenAIChatClient
-from azure.identity import DefaultAzureCredential
-from azure.identity.aio import get_bearer_token_provider
+from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
 from pydantic import Field
 from rich import print
 from rich.logging import RichHandler
 
-# Configuración de logging con rich
-logging.basicConfig(level=logging.WARNING, format="%(message)s", datefmt="[%X]", handlers=[RichHandler()])
-logger = logging.getLogger("planificador_fin_de_semana")
+# Setup logging
+handler = RichHandler(show_path=False, rich_tracebacks=True, show_level=False)
+logging.basicConfig(level=logging.WARNING, handlers=[handler], force=True, format="%(message)s")
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
+# Configurar el cliente para usar Azure OpenAI, GitHub Models, Ollama o OpenAI
 load_dotenv(override=True)
 API_HOST = os.getenv("API_HOST", "github")
 
+async_credential = None
 if API_HOST == "azure":
+    async_credential = DefaultAzureCredential()
+    token_provider = get_bearer_token_provider(async_credential, "https://cognitiveservices.azure.com/.default")
     client = OpenAIChatClient(
-        base_url=os.environ.get("AZURE_OPENAI_ENDPOINT") + "/openai/v1/",
-        api_key=get_bearer_token_provider(DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"),
-        model_id=os.environ.get("AZURE_OPENAI_CHAT_DEPLOYMENT"),
+        base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT']}/openai/v1/",
+        api_key=token_provider,
+        model_id=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
 elif API_HOST == "github":
     client = OpenAIChatClient(
@@ -40,7 +45,7 @@ elif API_HOST == "ollama":
         model_id=os.environ.get("OLLAMA_MODEL", "llama3.1:latest"),
     )
 else:
-    client = OpenAIChatClient(api_key=os.environ.get("OPENAI_API_KEY"), model_id=os.environ.get("OPENAI_MODEL", "gpt-4o"))
+    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-4o"))
 
 
 def get_weather(
@@ -81,7 +86,11 @@ def get_current_date() -> str:
 
 agent = ChatAgent(
     chat_client=client,
-    instructions=("Ayudas a las personas a planear su fin de semana y elegir las mejores actividades según el clima. " "Si una actividad sería desagradable con el clima previsto, no la sugieras. " "Incluye la fecha del fin de semana en tu respuesta."),
+    instructions=(
+        "Ayudas a las personas a planear su fin de semana y elegir las mejores actividades según el clima. "
+        "Si una actividad sería desagradable con el clima previsto, no la sugieras. "
+        "Incluye la fecha del fin de semana en tu respuesta."
+    ),
     tools=[get_weather, get_activities, get_current_date],
 )
 
@@ -89,6 +98,9 @@ agent = ChatAgent(
 async def main():
     response = await agent.run("Hola, ¿qué puedo hacer este fin de semana en San Francisco?")
     print(response.text)
+
+    if async_credential:
+        await async_credential.close()
 
 
 if __name__ == "__main__":

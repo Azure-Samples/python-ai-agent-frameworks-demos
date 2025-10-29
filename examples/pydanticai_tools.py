@@ -4,8 +4,7 @@ import os
 import random
 from datetime import datetime
 
-from azure.identity import DefaultAzureCredential
-from azure.identity.aio import get_bearer_token_provider
+from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
 from openai import AsyncOpenAI
 from pydantic_ai import Agent
@@ -22,19 +21,24 @@ logger = logging.getLogger("weekend_planner")
 load_dotenv(override=True)
 API_HOST = os.getenv("API_HOST", "github")
 
-if API_HOST == "github":
-    client = AsyncOpenAI(api_key=os.environ["GITHUB_TOKEN"], base_url="https://models.inference.ai.azure.com")
-    model = OpenAIChatModel(os.getenv("GITHUB_MODEL", "gpt-4o"), provider=OpenAIProvider(openai_client=client))
-elif API_HOST == "azure":
-    token_provider = get_bearer_token_provider(DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default")
+async_credential = None
+if API_HOST == "azure":
+    async_credential = DefaultAzureCredential()
+    token_provider = get_bearer_token_provider(async_credential, "https://cognitiveservices.azure.com/.default")
     client = AsyncOpenAI(
         base_url=os.environ["AZURE_OPENAI_ENDPOINT"] + "/openai/v1",
         api_key=token_provider,
     )
     model = OpenAIChatModel(os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"], provider=OpenAIProvider(openai_client=client))
+elif API_HOST == "github":
+    client = AsyncOpenAI(api_key=os.environ["GITHUB_TOKEN"], base_url="https://models.inference.ai.azure.com")
+    model = OpenAIChatModel(os.getenv("GITHUB_MODEL", "gpt-4o"), provider=OpenAIProvider(openai_client=client))
 elif API_HOST == "ollama":
     client = AsyncOpenAI(base_url=os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1"), api_key="none")
     model = OpenAIChatModel(os.environ["OLLAMA_MODEL"], provider=OpenAIProvider(openai_client=client))
+else:
+    client = AsyncOpenAI(api_key=os.environ["OPENAI_API_KEY"])
+    model = OpenAIChatModel(os.environ.get("OPENAI_MODEL", "gpt-4o"), provider=OpenAIProvider(openai_client=client))
 
 
 def get_weather(city: str) -> dict:
@@ -69,7 +73,11 @@ def get_current_date() -> str:
 
 agent = Agent(
     model,
-    system_prompt="You help users plan their weekends and choose the best activities for the given weather. If an activity would be unpleasant in the weather, don't suggest it. Include the date of the weekend in your response.",
+    system_prompt=(
+        "You help users plan their weekends and choose the best activities for the given weather."
+        "If an activity would be unpleasant in the weather, don't suggest it."
+        "Include the date of the weekend in your response."
+    ),
     tools=[get_weather, get_activities, get_current_date],
 )
 
@@ -77,6 +85,9 @@ agent = Agent(
 async def main():
     result = await agent.run("what can I do for funzies this weekend in Seattle?")
     print(result.output)
+
+    if async_credential:
+        await async_credential.close()
 
 
 if __name__ == "__main__":
