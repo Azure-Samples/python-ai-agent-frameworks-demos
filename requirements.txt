@@ -18,4 +18,4 @@ llama-index-llms-openai-like
 llama-index-embeddings-azure-openai
 smolagents
 langchain-mcp-adapters
-agent-framework-core
+agent-framework-core==1.0.0b251016
