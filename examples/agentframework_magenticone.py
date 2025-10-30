@@ -13,24 +13,25 @@ from agent_framework import (
     MagenticOrchestratorMessageEvent,
     WorkflowOutputEvent,
 )
-from agent_framework.azure import AzureOpenAIChatClient
 from agent_framework.openai import OpenAIChatClient
-from azure.identity import DefaultAzureCredential
+from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
 
-# Setup the client to use either Azure OpenAI or GitHub Models
+# Configure OpenAI client based on environment
 load_dotenv(override=True)
 API_HOST = os.getenv("API_HOST", "github")
 
+async_credential = None
 if API_HOST == "azure":
-    client = AzureOpenAIChatClient(
-        credential=DefaultAzureCredential(),
-        deployment_name=os.environ.get("AZURE_OPENAI_CHAT_DEPLOYMENT"),
-        endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT"),
-        api_version=os.environ.get("AZURE_OPENAI_VERSION"),
+    async_credential = DefaultAzureCredential()
+    token_provider = get_bearer_token_provider(async_credential, "https://cognitiveservices.azure.com/.default")
+    client = OpenAIChatClient(
+        base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT']}/openai/v1/",
+        api_key=token_provider,
+        model_id=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
 elif API_HOST == "github":
     client = OpenAIChatClient(
@@ -45,7 +46,7 @@ elif API_HOST == "ollama":
         model_id=os.environ.get("OLLAMA_MODEL", "llama3.1:latest"),
     )
 else:
-    client = OpenAIChatClient(api_key=os.environ.get("OPENAI_API_KEY"), model_id=os.environ.get("OPENAI_MODEL", "gpt-4o"))
+    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-4o"))
 
 # Initialize rich console
 console = Console()
@@ -53,7 +54,10 @@ console = Console()
 # Create the agents
 local_agent = ChatAgent(
     chat_client=client,
-    instructions=("You are a helpful assistant that can suggest authentic and interesting local activities " "or places to visit for a user and can utilize any context information provided."),
+    instructions=(
+        "You are a helpful assistant that can suggest authentic and interesting local activities "
+        "or places to visit for a user and can utilize any context information provided."
+    ),
     name="local_agent",
     description="A local assistant that can suggest local activities or places to visit.",
 )
@@ -135,6 +139,8 @@ async def main():
                     padding=(1, 2),
                 )
             )
+    if async_credential:
+        await async_credential.close()
 
 
 if __name__ == "__main__":
