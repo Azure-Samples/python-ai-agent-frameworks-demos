@@ -73,66 +73,76 @@ def is_approved(message: Any) -> bool:
 
 
 # Create Writer agent - generates content
-writer = client.create_agent(
-    name="Writer",
-    instructions=(
-        "You are an excellent content writer. "
-        "Create clear, engaging content based on the user's request. "
-        "Focus on clarity, accuracy, and proper structure."
-    ),
-)
+def create_writer():
+    return client.create_agent(
+        name="Writer",
+        instructions=(
+            "You are an excellent content writer. "
+            "Create clear, engaging content based on the user's request. "
+            "Focus on clarity, accuracy, and proper structure."
+        ),
+    )
+
 
 # Create Reviewer agent - evaluates and provides structured feedback
-reviewer = client.create_agent(
-    name="Reviewer",
-    instructions=(
-        "You are an expert content reviewer. "
-        "Evaluate the writer's content based on:\n"
-        "1. Clarity - Is it easy to understand?\n"
-        "2. Completeness - Does it fully address the topic?\n"
-        "3. Accuracy - Is the information correct?\n"
-        "4. Structure - Is it well-organized?\n\n"
-        "Return a JSON object with:\n"
-        "- score: overall quality (0-100)\n"
-        "- feedback: concise, actionable feedback\n"
-        "- clarity, completeness, accuracy, structure: individual scores (0-100)"
-    ),
-    response_format=ReviewResult,
-)
+def create_reviewer():
+    return client.create_agent(
+        name="Reviewer",
+        instructions=(
+            "You are an expert content reviewer. "
+            "Evaluate the writer's content based on:\n"
+            "1. Clarity - Is it easy to understand?\n"
+            "2. Completeness - Does it fully address the topic?\n"
+            "3. Accuracy - Is the information correct?\n"
+            "4. Structure - Is it well-organized?\n\n"
+            "Return a JSON object with:\n"
+            "- score: overall quality (0-100)\n"
+            "- feedback: concise, actionable feedback\n"
+            "- clarity, completeness, accuracy, structure: individual scores (0-100)"
+        ),
+        response_format=ReviewResult,
+    )
+
 
 # Create Editor agent - improves content based on feedback
-editor = client.create_agent(
-    name="Editor",
-    instructions=(
-        "You are a skilled editor. "
-        "You will receive content along with review feedback. "
-        "Improve the content by addressing all the issues mentioned in the feedback. "
-        "Maintain the original intent while enhancing clarity, completeness, accuracy, and structure."
-    ),
-)
+def create_editor():
+    return client.create_agent(
+        name="Editor",
+        instructions=(
+            "You are a skilled editor. "
+            "You will receive content along with review feedback. "
+            "Improve the content by addressing all the issues mentioned in the feedback. "
+            "Maintain the original intent while enhancing clarity, completeness, accuracy, and structure."
+        ),
+    )
+
 
 # Create Publisher agent - formats content for publication
-publisher = client.create_agent(
-    name="Publisher",
-    instructions=(
-        "You are a publishing agent. "
-        "You receive either approved content or edited content. "
-        "Format it for publication with proper headings and structure."
-    ),
-)
+def create_publisher():
+    return client.create_agent(
+        name="Publisher",
+        instructions=(
+            "You are a publishing agent. "
+            "You receive either approved content or edited content. "
+            "Format it for publication with proper headings and structure."
+        ),
+    )
+
 
 # Create Summarizer agent - creates final publication report
-summarizer = client.create_agent(
-    name="Summarizer",
-    instructions=(
-        "You are a summarizer agent. "
-        "Create a final publication report that includes:\n"
-        "1. A brief summary of the published content\n"
-        "2. The workflow path taken (direct approval or edited)\n"
-        "3. Key highlights and takeaways\n"
-        "Keep it concise and professional."
-    ),
-)
+def create_summarizer():
+    return client.create_agent(
+        name="Summarizer",
+        instructions=(
+            "You are a summarizer agent. "
+            "Create a final publication report that includes:\n"
+            "1. A brief summary of the published content\n"
+            "2. The workflow path taken (direct approval or edited)\n"
+            "3. Key highlights and takeaways\n"
+            "Keep it concise and professional."
+        ),
+    )
+
 
 # Build workflow with branching and convergence:
 # Writer → Reviewer → [branches]:
@@ -144,15 +154,20 @@ workflow = (
         name="Content Review Workflow",
         description="Multi-agent content creation with quality-based routing (Writer→Reviewer→Editor/Publisher)",
     )
-    .set_start_executor(writer)
-    .add_edge(writer, reviewer)
+    .register_agent(create_writer, name="Writer")
+    .register_agent(create_reviewer, name="Reviewer")
+    .register_agent(create_editor, name="Editor")
+    .register_agent(create_publisher, name="Publisher")
+    .register_agent(create_summarizer, name="Summarizer")
+    .set_start_executor("Writer")
+    .add_edge("Writer", "Reviewer")
     # Branch 1: High quality (>= 80) goes directly to publisher
-    .add_edge(reviewer, publisher, condition=is_approved)
+    .add_edge("Reviewer", "Publisher", condition=is_approved)
     # Branch 2: Low quality (< 80) goes to editor first, then publisher
-    .add_edge(reviewer, editor, condition=needs_editing)
-    .add_edge(editor, publisher)
+    .add_edge("Reviewer", "Editor", condition=needs_editing)
+    .add_edge("Editor", "Publisher")
     # Both paths converge: Publisher → Summarizer
-    .add_edge(publisher, summarizer)
+    .add_edge("Publisher", "Summarizer")
     .build()
 )
 
