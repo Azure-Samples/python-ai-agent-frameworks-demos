@@ -1,24 +1,18 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import json
 import os
 from dataclasses import dataclass, field
-from typing import Annotated
 
 from agent_framework import (
     AgentExecutorRequest,
     AgentExecutorResponse,
     AgentRunResponse,
-    AgentRunUpdateEvent,
     ChatAgent,
     ChatMessage,
     Executor,
-    FunctionCallContent,
-    FunctionResultContent,
     RequestInfoEvent,
     Role,
-    ToolMode,
     WorkflowBuilder,
     WorkflowContext,
     WorkflowOutputEvent,
@@ -28,7 +22,6 @@ from agent_framework import (
 from agent_framework.openai import OpenAIChatClient
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
-from pydantic import Field
 from typing_extensions import Never
 
 # Configure OpenAI client based on environment
@@ -60,56 +53,20 @@ else:
     client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-4o"))
 
 """
-Sample: Tool-enabled agents with human feedback
+Sample: Human-in-the-loop workflow
 
 Pipeline layout:
-writer_agent (uses Azure OpenAI tools) -> Coordinator -> writer_agent
+writer_agent -> Coordinator -> writer_agent
 -> Coordinator -> final_editor_agent -> Coordinator -> output
 
-The writer agent calls tools to gather product facts before drafting copy. A custom executor
+The writer agent drafts content based on a user-provided topic. A custom executor
 packages the draft and emits a RequestInfoEvent so a human can comment, then replays the human
 guidance back into the conversation before the final editor agent produces the polished output.
 
 Demonstrates:
-- Attaching Python function tools to an agent inside a workflow.
 - Capturing the writer's output for human review.
-- Streaming AgentRunUpdateEvent updates alongside human-in-the-loop pauses.
-
-Prerequisites:
-- Azure OpenAI configured for AzureOpenAIChatClient with required environment variables.
-- Authentication via azure-identity. Run `az login` before executing.
+- Human-in-the-loop feedback that can approve or request revisions.
 """
-
-
-def fetch_product_brief(
-    product_name: Annotated[str, Field(description="Product name to look up.")],
-) -> str:
-    """Return a marketing brief for a product."""
-    briefs = {
-        "lumenx desk lamp": (
-            "Product: LumenX Desk Lamp\n"
-            "- Three-point adjustable arm with 270° rotation.\n"
-            "- Custom warm-to-neutral LED spectrum (2700K-4000K).\n"
-            "- USB-C charging pad integrated in the base.\n"
-            "- Designed for home offices and late-night study sessions."
-        )
-    }
-    return briefs.get(product_name.lower(), f"No stored brief for '{product_name}'.")
-
-
-def get_brand_voice_profile(
-    voice_name: Annotated[str, Field(description="Brand or campaign voice to emulate.")],
-) -> str:
-    """Return guidance for the requested brand voice."""
-    voices = {
-        "lumenx launch": (
-            "Voice guidelines:\n"
-            "- Friendly and modern with concise sentences.\n"
-            "- Highlight practical benefits before aesthetics.\n"
-            "- End with an invitation to imagine the product in daily use."
-        )
-    }
-    return voices.get(voice_name.lower(), f"No stored voice profile for '{voice_name}'.")
 
 
 @dataclass
@@ -198,16 +155,15 @@ class Coordinator(Executor):
 
 
 def create_writer_agent() -> ChatAgent:
-    """Creates a writer agent with tools."""
+    """Creates a writer agent."""
     return client.create_agent(
         name="writer_agent",
         instructions=(
-            "You are a marketing writer. Call the available tools before drafting copy so you are precise. "
-            "Always call both tools once before drafting. Summarize tool outputs as bullet points, then "
-            "produce a 3-sentence draft."
+            "You are an excellent content writer. "
+            "Create clear, engaging content based on the user's request. "
+            "Focus on clarity, accuracy, and proper structure. "
+            "Keep your drafts concise (3-5 sentences)."
         ),
-        tools=[fetch_product_brief, get_brand_voice_profile],
-        tool_choice=ToolMode.REQUIRED_ANY,
     )
 
 
@@ -222,54 +178,9 @@ def create_final_editor_agent() -> ChatAgent:
     )
 
 
-def display_agent_run_update(event: AgentRunUpdateEvent, last_executor: str | None) -> None:
-    """Display an AgentRunUpdateEvent in a readable format."""
-    printed_tool_calls: set[str] = set()
-    printed_tool_results: set[str] = set()
-    executor_id = event.executor_id
-    update = event.data
-    # Extract and print any new tool calls or results from the update.
-    function_calls = [c for c in update.contents if isinstance(c, FunctionCallContent)]  # type: ignore[union-attr]
-    function_results = [c for c in update.contents if isinstance(c, FunctionResultContent)]  # type: ignore[union-attr]
-    if executor_id != last_executor:
-        if last_executor is not None:
-            print()
-        print(f"{executor_id}:", end=" ", flush=True)
-        last_executor = executor_id
-    # Print any new tool calls before the text update.
-    for call in function_calls:
-        if call.call_id in printed_tool_calls:
-            continue
-        printed_tool_calls.add(call.call_id)
-        args = call.arguments
-        args_preview = json.dumps(args, ensure_ascii=False) if isinstance(args, dict) else (args or "").strip()
-        print(
-            f"\n{executor_id} [tool-call] {call.name}({args_preview})",
-            flush=True,
-        )
-        print(f"{executor_id}:", end=" ", flush=True)
-    # Print any new tool results before the text update.
-    for result in function_results:
-        if result.call_id in printed_tool_results:
-            continue
-        printed_tool_results.add(result.call_id)
-        result_text = result.result
-        if not isinstance(result_text, str):
-            result_text = json.dumps(result_text, ensure_ascii=False)
-        print(
-            f"\n{executor_id} [tool-result] {result.call_id}: {result_text}",
-            flush=True,
-        )
-        print(f"{executor_id}:", end=" ", flush=True)
-    # Finally, print the text update.
-    print(update, end="", flush=True)
-
-
-async def main() -> None:
-    """Run the workflow and bridge human feedback between two agents."""
-
-    # Build the workflow.
-    workflow = (
+def build_workflow():
+    """Build and return the workflow."""
+    return (
         WorkflowBuilder()
         .register_agent(create_writer_agent, name="writer_agent")
         .register_agent(create_final_editor_agent, name="final_editor_agent")
@@ -289,12 +200,19 @@ async def main() -> None:
         .build()
     )
 
-    # Switch to turn on agent run update display.
-    # By default this is off to reduce clutter during human input.
-    display_agent_run_update_switch = False
+
+async def main() -> None:
+    """Run the workflow and bridge human feedback between two agents."""
+
+    # Build the workflow.
+    workflow = build_workflow()
+
+    # Prompt user for what to write about
+    print("What would you like the writer to create content about?")
+    topic = input("Topic: ").strip()
 
     print(
-        "Interactive mode. When prompted, provide a short feedback note for the editor.",
+        "\nInteractive mode. When prompted, provide a short feedback note for the editor.",
         flush=True,
     )
 
@@ -303,11 +221,8 @@ async def main() -> None:
     initial_run = True
 
     while not completed:
-        last_executor: str | None = None
         if initial_run:
-            stream = workflow.run_stream(
-                "Create a short launch blurb for the LumenX desk lamp. Emphasize adjustability and warm lighting."
-            )
+            stream = workflow.run_stream(f"Write a short piece about: {topic}")
             initial_run = False
         elif pending_responses is not None:
             stream = workflow.send_responses_streaming(pending_responses)
@@ -318,14 +233,10 @@ async def main() -> None:
         requests: list[tuple[str, DraftFeedbackRequest]] = []
 
         async for event in stream:
-            if isinstance(event, AgentRunUpdateEvent) and display_agent_run_update_switch:
-                display_agent_run_update(event, last_executor)
             if isinstance(event, RequestInfoEvent) and isinstance(event.data, DraftFeedbackRequest):
                 # Stash the request so we can prompt the human after the stream completes.
                 requests.append((event.request_id, event.data))
-                last_executor = None
             elif isinstance(event, WorkflowOutputEvent):
-                last_executor = None
                 response = event.data
                 print("\n===== Final output =====")
                 final_text = getattr(response, "text", str(response))
