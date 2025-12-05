@@ -95,7 +95,7 @@ agent = ChatAgent(
 
 
 async def main():
-    response = await agent.run("hii what can I do this weekend in San Francisco?")
+    response = await agent.run("what can I do this weekend in San Francisco?")
     print(response.text)
 
     if async_credential:

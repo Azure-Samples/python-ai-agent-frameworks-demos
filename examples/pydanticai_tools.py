@@ -67,6 +67,7 @@ def get_activities(city: str, date: str) -> list:
 
 
 def get_current_date() -> str:
+    """Gets the current date from the system and returns as a string in format YYYY-MM-DD."""
     logger.info("Getting current date")
     return datetime.now().strftime("%Y-%m-%d")
 

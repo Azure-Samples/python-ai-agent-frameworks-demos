@@ -80,13 +80,18 @@ def get_current_date() -> str:
 
 agent = create_agent(
     model=model,
-    system_prompt="You help users plan their weekends and choose the best activities for the given weather. If an activity would be unpleasant in the weather, don't suggest it. Include the date of the weekend in your response.",
+    system_prompt=(
+        "You help users plan their weekends and choose the best activities for the given weather. "
+        "If an activity would be unpleasant in weather, don't suggest it. Include date of the weekend in response."
+    ),
     tools=[get_weather, get_activities, get_current_date],
 )
 
 
 def main():
-    response = agent.invoke({"messages": [{"role": "user", "content": "hii what can I do this weekend in San Francisco?"}]})
+    response = agent.invoke(
+        {"messages": [{"role": "user", "content": "hii what can I do this weekend in San Francisco?"}]}
+    )
     latest_message = response["messages"][-1]
     print(latest_message.content)
 
