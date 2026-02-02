@@ -2,7 +2,7 @@
 import os
 from typing import Any
 
-from agent_framework import AgentExecutorResponse, WorkflowBuilder
+from agent_framework import AgentExecutorResponse, ChatAgent, WorkflowBuilder
 from agent_framework.openai import OpenAIChatClient
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
@@ -74,7 +74,8 @@ def is_approved(message: Any) -> bool:
 
 # Create Writer agent - generates content
 def create_writer():
-    return client.create_agent(
+    return ChatAgent(
+        chat_client=client,
         name="Writer",
         instructions=(
             "You are an excellent content writer. "
@@ -86,7 +87,8 @@ def create_writer():
 
 # Create Reviewer agent - evaluates and provides structured feedback
 def create_reviewer():
-    return client.create_agent(
+    return ChatAgent(
+        chat_client=client,
         name="Reviewer",
         instructions=(
             "You are an expert content reviewer. "
@@ -106,7 +108,8 @@ def create_reviewer():
 
 # Create Editor agent - improves content based on feedback
 def create_editor():
-    return client.create_agent(
+    return ChatAgent(
+        chat_client=client,
         name="Editor",
         instructions=(
             "You are a skilled editor. "
@@ -119,7 +122,8 @@ def create_editor():
 
 # Create Publisher agent - formats content for publication
 def create_publisher():
-    return client.create_agent(
+    return ChatAgent(
+        chat_client=client,
         name="Publisher",
         instructions=(
             "You are a publishing agent. "
@@ -131,7 +135,8 @@ def create_publisher():
 
 # Create Summarizer agent - creates final publication report
 def create_summarizer():
-    return client.create_agent(
+    return ChatAgent(
+        chat_client=client,
         name="Summarizer",
         instructions=(
             "You are a summarizer agent. "
