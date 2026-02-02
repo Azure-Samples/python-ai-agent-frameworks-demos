@@ -18,5 +18,5 @@ llama-index-llms-openai-like
 llama-index-embeddings-azure-openai
 smolagents
 langchain-mcp-adapters
-agent-framework-core @ git+https://github.com/microsoft/agent-framework.git#subdirectory=python/packages/core
-agent-framework-devui @ git+https://github.com/microsoft/agent-framework.git#subdirectory=python/packages/devui
+agent-framework-core @ git+https://github.com/microsoft/agent-framework.git@98cd72839e4057d661a58092a3b013993264d834#subdirectory=python/packages/core
+agent-framework-devui @ git+https://github.com/microsoft/agent-framework.git@98cd72839e4057d661a58092a3b013993264d834#subdirectory=python/packages/devui
