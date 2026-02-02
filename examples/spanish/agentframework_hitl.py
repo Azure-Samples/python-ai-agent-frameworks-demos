@@ -30,7 +30,7 @@ from dotenv import load_dotenv
 from pydantic import Field
 from typing_extensions import Never
 
-# Configurar el cliente para usar Azure OpenAI, GitHub Models, Ollama o OpenAI
+# Configura el cliente para usar Azure OpenAI, GitHub Models, Ollama u OpenAI
 load_dotenv(override=True)
 API_HOST = os.getenv("API_HOST", "github")
 async_credential = None
@@ -59,25 +59,24 @@ else:
     client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-4o"))
 
 """
-Ejemplo: Agentes con herramientas y retroalimentación humana
+Ejemplo: agentes con herramientas y retroalimentación humana
 
-Diseño del flujo:
+Diseño del pipeline:
 agente_escritor (usa herramientas de Azure OpenAI) -> Coordinador -> agente_escritor
 -> Coordinador -> agente_editor_final -> Coordinador -> salida
 
-El agente escritor llama a herramientas para obtener datos del producto antes de redactar el texto.
-Un ejecutor personalizado empaqueta el borrador y emite un RequestInfoEvent para que un humano
-pueda comentar, luego reproduce la guía humana en la conversación antes de que el agente editor
-final produzca la salida pulida.
+El agente escritor llama a herramientas para reunir datos del producto antes de escribir una versión preliminar.
+Un ejecutor personalizado empaqueta la versión preliminar y emite un RequestInfoEvent para que un humano pueda comentar;
+luego incorpora esa guía en la conversación antes de que el editor final produzca la salida pulida.
 
 Demuestra:
-- Adjuntar herramientas de funciones Python a un agente dentro de un flujo de trabajo.
+- Adjuntar herramientas (funciones Python) a un agente dentro de un workflow.
 - Capturar la salida del escritor para revisión humana.
-- Transmitir actualizaciones de AgentRunUpdateEvent junto con pausas de humano en el ciclo.
+- Transmitir actualizaciones de AgentRunUpdateEvent junto con pausas con intervención humana.
 
 Requisitos previos:
 - Azure OpenAI configurado para AzureOpenAIChatClient con las variables de entorno requeridas.
-- Autenticación via azure-identity. Ejecutá `az login` antes de ejecutar.
+- Autenticación vía azure-identity. Ejecutá `az login` antes de ejecutar.
 """
 
 
@@ -92,7 +91,7 @@ def obtener_resumen_producto(
             "Producto: Lámpara de Escritorio LumenX\n"
             "- Brazo ajustable de tres puntos con rotación de 270°.\n"
             "- Espectro LED personalizado de cálido a neutro (2700K-4000K).\n"
-            "- Base de carga USB-C integrada en la base.\n"
+            "- Almohadilla de carga USB-C integrada en la base.\n"
             "- Diseñada para oficinas en casa y sesiones de estudio nocturnas."
         )
     }
@@ -139,7 +138,7 @@ class Coordinador(Executor):
         borrador: AgentExecutorResponse,
         ctx: WorkflowContext[Never, AgentResponse],
     ) -> None:
-        """Maneja las respuestas de los otros dos agentes en el flujo de trabajo."""
+        """Maneja las respuestas de los otros dos agentes en el workflow."""
         if borrador.executor_id == self.id_editor_final:
             # Respuesta del editor final; emitir salida directamente.
             await ctx.yield_output(borrador.agent_response)
@@ -155,10 +154,10 @@ class Coordinador(Executor):
             conversacion = list(borrador.agent_response.messages)
         texto_borrador = borrador.agent_response.text.strip()
         if not texto_borrador:
-            texto_borrador = "No se produjo texto de borrador."
+            texto_borrador = "No se produjo ninguna versión preliminar."
 
         indicacion = (
-            "Revisá el borrador del escritor y proporcioná una nota direccional breve "
+            "Revisá la versión preliminar del escritor y compartí una nota direccional breve "
             "(ajustes de tono, detalles imprescindibles, público objetivo, etc.). "
             "Mantené la nota en menos de 30 palabras."
         )
@@ -182,7 +181,7 @@ class Coordinador(Executor):
             await ctx.send_message(
                 AgentExecutorRequest(
                     messages=solicitud_original.conversacion
-                    + [ChatMessage(Role.USER, text="El borrador está aprobado tal como está.")],
+                    + [ChatMessage(Role.USER, text="La versión preliminar está aprobada tal como está.")],
                     should_respond=True,
                 ),
                 target_id=self.id_editor_final,
@@ -194,7 +193,7 @@ class Coordinador(Executor):
         instruccion = (
             "Un revisor humano compartió la siguiente guía:\n"
             f"{nota or 'No se proporcionó guía específica.'}\n\n"
-            "Reescribí el borrador del mensaje anterior del asistente en una versión final pulida. "
+            "Reescribí la versión preliminar del mensaje anterior del asistente en una versión final pulida. "
             "Mantené la respuesta en menos de 120 palabras y reflejá los ajustes de tono solicitados."
         )
         conversacion.append(ChatMessage(Role.USER, text=instruccion))
@@ -209,9 +208,9 @@ def crear_agente_escritor() -> ChatAgent:
         chat_client=client,
         name="agente_escritor",
         instructions=(
-            "Sos un escritor de marketing. Llamá a las herramientas disponibles antes de redactar para ser preciso. "
-            "Siempre llamá a ambas herramientas una vez antes de redactar. Resumí las salidas de las herramientas "
-            "como viñetas, luego producí un borrador de 3 oraciones."
+            "Sos un escritor de marketing. Llamá a las herramientas disponibles antes de escribir una versión preliminar para ser preciso. "
+            "Siempre llamá a ambas herramientas una vez antes de escribir una versión preliminar. Resumí las salidas de las herramientas "
+            "como viñetas, luego producí una versión preliminar de 3 oraciones."
         ),
         tools=[obtener_resumen_producto, obtener_perfil_voz_marca],
         tool_choice="required",
@@ -275,9 +274,9 @@ def mostrar_actualizacion_ejecucion_agente(evento: AgentRunUpdateEvent, ultimo_e
 
 
 async def main() -> None:
-    """Ejecuta el flujo de trabajo y conecta la retroalimentación humana entre dos agentes."""
+    """Ejecuta el workflow y conecta la retroalimentación humana entre dos agentes."""
 
-    # Construir el flujo de trabajo.
+    # Construir el workflow.
     flujo_trabajo = (
         WorkflowBuilder()
         .register_agent(crear_agente_escritor, name="agente_escritor")
@@ -345,9 +344,9 @@ async def main() -> None:
         if solicitudes and not completado:
             respuestas: dict[str, str] = {}
             for id_solicitud, solicitud in solicitudes:
-                print("\n----- Borrador del escritor -----")
+                print("\n----- Versión preliminar del escritor -----")
                 print(solicitud.texto_borrador.strip())
-                print("\nProporcioná guía para el editor (o 'aprobar' para aceptar el borrador).")
+                print("\nProporcioná guía para el editor (o 'aprobar' para aceptar la versión preliminar).")
                 respuesta_usuario = input("Retroalimentación humana: ").strip()  # noqa: ASYNC250
                 if respuesta_usuario.lower() == "salir":
                     print("Saliendo...")
@@ -355,7 +354,7 @@ async def main() -> None:
                 respuestas[id_solicitud] = respuesta_usuario
             respuestas_pendientes = respuestas
 
-    print("Flujo de trabajo completado.")
+    print("Workflow completado.")
 
     # Cerrar la credencial asíncrona si fue creada
     if async_credential is not None:

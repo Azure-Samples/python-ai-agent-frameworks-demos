@@ -33,12 +33,12 @@ Este repositorio ofrece ejemplos de muchos frameworks populares de agentes de IA
 
 ## Cómo empezar
 
-Tenés varias opciones para comenzar con este repositorio.
-La forma más rápida es usar GitHub Codespaces, ya que te configurará todo automáticamente, pero también podés [configurarlo localmente](#entorno-local).
+Tienes varias opciones para comenzar con este repositorio.
+La forma más rápida es usar GitHub Codespaces, ya que te configurará todo automáticamente, pero también puedes [configurarlo localmente](#entorno-local).
 
 ### GitHub Codespaces
 
-Podés ejecutar este repositorio virtualmente usando GitHub Codespaces. El botón abrirá una instancia de VS Code basada en web en tu navegador:
+Puedes ejecutar este repositorio virtualmente usando GitHub Codespaces. El botón abrirá una instancia de VS Code basada en web en tu navegador:
 
 1. Abre el repositorio (esto puede tardar varios minutos):
 
@@ -51,7 +51,7 @@ Podés ejecutar este repositorio virtualmente usando GitHub Codespaces. El botó
 
 Una opción relacionada es VS Code Dev Containers, que abrirá el proyecto en tu VS Code local usando la [extensión Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers):
 
-1. Inicia Docker Desktop (instálalo si no lo tenés ya)
+1. Inicia Docker Desktop (instálalo si no lo tienes ya)
 2. Abre el proyecto:
 
     [![Abrir en Dev Containers](https://img.shields.io/static/v1?style=for-the-badge&label=Dev%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/Azure-Samples/python-ai-agent-frameworks-demos)
@@ -92,16 +92,16 @@ Estos ejemplos se pueden ejecutar con una cuenta de Azure OpenAI, OpenAI.com, se
 
 ## Usar GitHub Models
 
-Si abres este repositorio en GitHub Codespaces, podés ejecutar los scripts gratis usando GitHub Models sin pasos adicionales, ya que tu `GITHUB_TOKEN` ya está configurado en el entorno de Codespaces.
+Si abres este repositorio en GitHub Codespaces, puedes ejecutar los scripts gratis usando GitHub Models sin pasos adicionales, ya que tu `GITHUB_TOKEN` ya está configurado en el entorno de Codespaces.
 
-Si querés ejecutar los scripts localmente, necesitás configurar la variable de entorno `GITHUB_TOKEN` con un token de acceso personal (PAT) de GitHub. Podés crear un PAT siguiendo estos pasos:
+Si quieres ejecutar los scripts localmente, necesitas configurar la variable de entorno `GITHUB_TOKEN` con un token de acceso personal (PAT) de GitHub. Puedes crear un PAT siguiendo estos pasos:
 
 1. Ve a la configuración de tu cuenta de GitHub.
 2. Haz clic en "Developer settings" en la barra lateral izquierda.
 3. Haz clic en "Personal access tokens" en la barra lateral izquierda.
 4. Haz clic en "Tokens (classic)" o "Fine-grained tokens" según tu preferencia.
 5. Haz clic en "Generate new token".
-6. Dale un nombre a tu token y selecciona los alcances que querés otorgar. Para este proyecto, no necesitás alcances específicos.
+6. Ponle un nombre a tu token y selecciona los alcances que quieres otorgar. Para este proyecto, no necesitas alcances específicos.
 7. Haz clic en "Generate token".
 8. Copia el token generado.
 9. Configura la variable de entorno `GITHUB_TOKEN` en tu terminal o IDE:
@@ -110,11 +110,11 @@ Si querés ejecutar los scripts localmente, necesitás configurar la variable de
     export GITHUB_TOKEN=tu_token_de_acceso_personal
     ```
 
-10. Opcionalmente, podés usar un modelo diferente a "gpt-4o" configurando la variable de entorno `GITHUB_MODEL`. Usa un modelo que soporte llamadas de funciones, como: `gpt-5`, `gpt-5-mini`, `gpt-4o`, `gpt-4o-mini`, `o3-mini`, `AI21-Jamba-1.5-Large`, `AI21-Jamba-1.5-Mini`, `Codestral-2501`, `Cohere-command-r`, `Ministral-3B`, `Mistral-Large-2411`, `Mistral-Nemo`, `Mistral-small`
+10. Opcionalmente, puedes usar un modelo diferente a "gpt-4o" configurando la variable de entorno `GITHUB_MODEL`. Usa un modelo que soporte llamadas de funciones, como: `gpt-5`, `gpt-5-mini`, `gpt-4o`, `gpt-4o-mini`, `o3-mini`, `AI21-Jamba-1.5-Large`, `AI21-Jamba-1.5-Mini`, `Codestral-2501`, `Cohere-command-r`, `Ministral-3B`, `Mistral-Large-2411`, `Mistral-Nemo`, `Mistral-small`
 
 ## Usar modelos de Azure OpenAI
 
-Podés ejecutar todos los ejemplos en este repositorio usando GitHub Models. Si querés ejecutar los ejemplos usando modelos de Azure OpenAI, necesitás provisionar los recursos de Azure AI, lo que generará costos.
+Puedes ejecutar todos los ejemplos en este repositorio usando GitHub Models. Si quieres ejecutar los ejemplos usando modelos de Azure OpenAI, necesitas provisionar los recursos de Azure AI, lo que generará costos.
 
 Este proyecto incluye infraestructura como código (IaC) para provisionar despliegues de Azure OpenAI de "gpt-4o" y "text-embedding-3-large". La IaC está definida en el directorio `infra` y usa Azure Developer CLI para provisionar los recursos.
 
@@ -190,7 +190,7 @@ Este proyecto incluye infraestructura como código (IaC) para provisionar despli
 
 ## Ejecutar los ejemplos en Python
 
-Podés ejecutar los ejemplos en este repositorio ejecutando los scripts en el directorio `examples/spanish`. Cada script demuestra un patrón o framework diferente de agente de IA.
+Puedes ejecutar los ejemplos en este repositorio ejecutando los scripts en el directorio `examples/spanish`. Cada script demuestra un patrón o framework diferente de agente de IA.
 
 ### Microsoft Agent Framework
 
@@ -201,6 +201,7 @@ Podés ejecutar los ejemplos en este repositorio ejecutando los scripts en el di
 | [agentframework_tools.py](agentframework_tools.py) | Usa Agent Framework para crear un agente planificador de fin de semana con múltiples herramientas. |
 | [agentframework_supervisor.py](agentframework_supervisor.py) | Usa Agent Framework con un supervisor que orquesta subagentes de actividades y recetas. |
 | [agentframework_magenticone.py](agentframework_magenticone.py) | Usa Agent Framework para crear un agente MagenticOne. |
+| [agentframework_hitl.py](agentframework_hitl.py) | Usa Agent Framework con human-in-the-loop (HITL) para confirmar o editar respuestas. |
 | [agentframework_workflow.py](agentframework_workflow.py) | Usa Agent Framework para crear un agente basado en flujo de trabajo. |
 
 ### LangChain v1 y LangGraph
@@ -246,6 +247,7 @@ Podés ejecutar los ejemplos en este repositorio ejecutando los scripts en el di
 | ------- | ----------- |
 | [llamaindex.py](llamaindex.py) | Usa LlamaIndex para construir un agente ReAct para RAG en múltiples índices. |
 | [smolagents_codeagent.py](smolagents_codeagent.py) | Usa SmolAgents para construir un agente de respuesta a preguntas que puede buscar en la web y ejecutar código. |
+| [mcp_server_basic.py](mcp_server_basic.py) | Servidor MCP básico para exponer herramientas locales. |
 
 ## Recursos
 

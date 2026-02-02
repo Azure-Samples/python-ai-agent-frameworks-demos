@@ -8,7 +8,7 @@ from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
 from pydantic import BaseModel
 
-# Configurar el cliente para usar Azure OpenAI, GitHub Models, Ollama o OpenAI
+# Configura el cliente de OpenAI según el entorno
 load_dotenv(override=True)
 API_HOST = os.getenv("API_HOST", "github")
 
@@ -78,9 +78,9 @@ def crear_escritor():
         chat_client=client,
         name="Escritor",
         instructions=(
-            "Sos un excelente escritor de contenido. "
-            "Creá contenido claro y atractivo basado en la solicitud del usuario. "
-            "Enfocate en la claridad, precisión y estructura adecuada."
+            "Eres un excelente escritor de contenido. "
+            "Crea contenido claro y atractivo basado en la solicitud del usuario. "
+            "Enfócate en la claridad, precisión y estructura adecuada."
         ),
     )
 
@@ -91,13 +91,13 @@ def crear_revisor():
         chat_client=client,
         name="Revisor",
         instructions=(
-            "Sos un experto revisor de contenido. "
-            "Evaluá el contenido del escritor basándote en:\n"
+            "Eres un experto revisor de contenido. "
+            "Evalúa el contenido del escritor basándote en:\n"
             "1. Claridad - ¿Es fácil de entender?\n"
             "2. Completitud - ¿Aborda completamente el tema?\n"
             "3. Precisión - ¿Es correcta la información?\n"
             "4. Estructura - ¿Está bien organizado?\n\n"
-            "Devolvé un objeto JSON con:\n"
+            "Devuelve un objeto JSON con:\n"
             "- puntaje: calidad general (0-100)\n"
             "- retroalimentacion: retroalimentación concisa y accionable\n"
             "- claridad, completitud, precision, estructura: puntajes individuales (0-100)"
@@ -112,10 +112,10 @@ def crear_editor():
         chat_client=client,
         name="Editor",
         instructions=(
-            "Sos un editor habilidoso. "
+            "Eres un editor habilidoso. "
             "Recibirás contenido junto con retroalimentación de revisión. "
-            "Mejorá el contenido abordando todos los problemas mencionados en la retroalimentación. "
-            "Mantené la intención original mientras mejorás la claridad, completitud, precisión y estructura."
+            "Mejora el contenido abordando todos los problemas mencionados en la retroalimentación. "
+            "Mantén la intención original mientras mejoras la claridad, completitud, precisión y estructura."
         ),
     )
 
@@ -126,9 +126,9 @@ def crear_publicador():
         chat_client=client,
         name="Publicador",
         instructions=(
-            "Sos un agente de publicación. "
-            "Recibís contenido aprobado o editado. "
-            "Formatealo para publicación con encabezados y estructura adecuados."
+            "Eres un agente de publicación. "
+            "Recibes contenido aprobado o editado. "
+            "Formatea el contenido para publicación con encabezados y estructura adecuados."
         ),
     )
 
@@ -139,12 +139,12 @@ def crear_resumidor():
         chat_client=client,
         name="Resumidor",
         instructions=(
-            "Sos un agente resumidor. "
-            "Creá un informe de publicación final que incluya:\n"
+            "Eres un agente resumidor. "
+            "Crea un informe de publicación final que incluya:\n"
             "1. Un breve resumen del contenido publicado\n"
             "2. El camino del flujo de trabajo seguido (aprobación directa o editado)\n"
             "3. Aspectos destacados y conclusiones clave\n"
-            "Mantené la concisión y profesionalismo."
+            "Mantén la concisión y el profesionalismo."
         ),
     )
 

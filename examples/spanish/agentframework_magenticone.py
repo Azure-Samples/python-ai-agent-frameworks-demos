@@ -1,5 +1,5 @@
 """
-Ejemplo de MagenticOne con Agent Framework - Planificación de Viaje con Múltiples Agentes
+Ejemplo de MagenticOne con Agent Framework - Planificación de viaje con múltiples agentes
 """
 import asyncio
 import os
@@ -22,7 +22,7 @@ from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.rule import Rule
 
-# Configurar el cliente para usar Azure OpenAI, GitHub Models, Ollama o OpenAI
+# Configura el cliente de OpenAI según el entorno
 load_dotenv(override=True)
 API_HOST = os.getenv("API_HOST", "github")
 
@@ -51,15 +51,15 @@ else:
     client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-4o"))
 
 
-# Initializar la consola rich
+# Inicializar la consola rich
 console = Console()
 
-# Crear los agentes
+# Crea los agentes
 agente_local = ChatAgent(
     chat_client=client,
     instructions=(
-        "Sos un asistente útil que puede sugerir actividades locales auténticas e interesantes "
-        "o lugares para visitar para un usuario y puede utilizar cualquier información de contexto proporcionada."
+        "Eres un asistente útil que puede sugerir actividades locales auténticas e interesantes "
+        "o lugares para visitar para un usuario y puede usar cualquier información de contexto proporcionada."
     ),
     name="agente_local",
     description="Un asistente local que puede sugerir actividades locales o lugares para visitar.",
@@ -68,9 +68,9 @@ agente_local = ChatAgent(
 agente_idioma = ChatAgent(
     chat_client=client,
     instructions=(
-        "Sos un asistente útil que puede revisar planes de viaje, brindando comentarios sobre consejos importantes"
+        "Eres un asistente útil que puede revisar planes de viaje, brindando comentarios sobre consejos importantes "
         "sobre cómo abordar mejor los desafíos de idioma o comunicación para el destino dado. "
-        "Si el plan ya incluye consejos de idioma, podés mencionar que el plan es satisfactorio, con justificación."
+        "Si el plan ya incluye consejos de idioma, puedes mencionar que el plan es satisfactorio, con justificación."
     ),
     name="agente_idioma",
     description="Un asistente útil que puede proporcionar consejos de idioma para un destino dado.",
@@ -79,9 +79,9 @@ agente_idioma = ChatAgent(
 agente_resumen_viaje = ChatAgent(
     chat_client=client,
     instructions=(
-        "Sos un asistente útil que puede tomar todas las sugerencias y consejos de los otros agentes "
-        "y proporcionar un plan de viaje final detallado. Debes asegurarte de que el plan esté integrado y completo."
-        "TU RESPUESTA FINAL DEBE SER EL PLAN COMPLETO. Proporciona un resumen exhaustivo cuando todas las perspectivas "
+        "Eres un asistente útil que puede tomar todas las sugerencias y consejos de los otros agentes "
+        "y proporcionar un plan de viaje final detallado. Debes asegurarte de que el plan esté integrado y completo. "
+        "TU RESPUESTA FINAL DEBE SER EL PLAN COMPLETO. Proporciona un resumen completo cuando todas las perspectivas "
         "de otros agentes se hayan integrado."
     ),
     name="agente_resumen_viaje",
@@ -91,7 +91,7 @@ agente_resumen_viaje = ChatAgent(
 # Crear un agente gerente para la orquestación
 agente_gerente = ChatAgent(
     chat_client=client,
-    instructions="Coordinás un equipo para completar tareas de planificación de viajes de manera eficiente.",
+    instructions="Coordinas un equipo para completar tareas de planificación de viajes de manera eficiente.",
     name="agente_gerente",
     description="Orquestador que coordina el flujo de trabajo de planificación de viajes",
 )
@@ -115,7 +115,7 @@ async def main():
     ultimo_id_mensaje: str | None = None
     evento_salida: WorkflowOutputEvent | None = None
 
-    async for event in orquestador_magentico.run_stream("Planificá un viaje de medio día a Costa Rica"):
+    async for event in orquestador_magentico.run_stream("Planifica un viaje de medio día a Costa Rica"):
         if isinstance(event, AgentRunUpdateEvent):
             id_mensaje = event.data.message_id
             if id_mensaje != ultimo_id_mensaje:
@@ -146,7 +146,7 @@ async def main():
                 next_agent = ledger.next_speaker.answer
                 instruction = ledger.instruction_or_question.answer
 
-                status_text = f"¿Plan satisfecho? {satisfied} | ¿Progresando? {progress} {loop}\n\n➡️  Siguiente paso: [bold]{next_agent}[/bold]\n{instruction}"
+                status_text = f"¿Plan satisfecho? {satisfied} | ¿Hay progreso? {progress} {loop}\n\n➡️  Siguiente paso: [bold]{next_agent}[/bold]\n{instruction}"
                 console.print(
                     Panel(
                         status_text,
