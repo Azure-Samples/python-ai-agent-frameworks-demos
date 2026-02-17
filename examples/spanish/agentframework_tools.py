@@ -5,7 +5,7 @@ import random
 from datetime import datetime
 from typing import Annotated
 
-from agent_framework import ChatAgent
+from agent_framework import tool
 from agent_framework.openai import OpenAIChatClient
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
@@ -47,7 +47,7 @@ elif API_HOST == "ollama":
 else:
     client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-4o"))
 
-
+@tool(approval_mode="never_require")
 def get_weather(
     city: Annotated[str, Field(description="La ciudad para obtener el clima.")],
 ) -> dict:
@@ -64,7 +64,7 @@ def get_weather(
             "description": "Lluvioso",
         }
 
-
+@tool(approval_mode="never_require")
 def get_activities(
     city: Annotated[str, Field(description="La ciudad para obtener actividades.")],
     date: Annotated[str, Field(description="La fecha (YYYY-MM-DD) para obtener actividades.")],
@@ -77,15 +77,15 @@ def get_activities(
         {"name": "Museo", "location": city},
     ]
 
-
+@tool(approval_mode="never_require")
 def get_current_date() -> str:
     """Obtiene la fecha actual del sistema en formato YYYY-MM-DD."""
     logger.info("Obteniendo la fecha actual")
     return datetime.now().strftime("%Y-%m-%d")
 
 
-agent = ChatAgent(
-    chat_client=client,
+agent = client.as_agent(
+    name="WeekendPlannerAgent",
     instructions=(
         "Ayudas a las personas a planear su fin de semana y elegir las mejores actividades según el clima. "
         "Si una actividad sería desagradable con el clima previsto, no la sugieras. "

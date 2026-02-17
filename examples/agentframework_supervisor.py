@@ -5,7 +5,7 @@ import random
 from datetime import datetime
 from typing import Annotated
 
-from agent_framework import ChatAgent
+from agent_framework import tool
 from agent_framework.openai import OpenAIChatClient
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
@@ -51,7 +51,7 @@ else:
 # Sub-agent 1 tools: weekend planning
 # ----------------------------------------------------------------------------------
 
-
+@tool(approval_mode="never_require")
 def get_weather(
     city: Annotated[str, Field(description="The city to get the weather for.")],
     date: Annotated[str, Field(description="The date to get weather for in format YYYY-MM-DD.")],
@@ -64,6 +64,7 @@ def get_weather(
         return {"temperature": 60, "description": "Rainy"}
 
 
+@tool(approval_mode="never_require")
 def get_activities(
     city: Annotated[str, Field(description="The city to get activities for.")],
     date: Annotated[str, Field(description="The date to get activities for in format YYYY-MM-DD.")],
@@ -76,15 +77,15 @@ def get_activities(
         {"name": "Museum", "location": city},
     ]
 
-
+@tool(approval_mode="never_require")
 def get_current_date() -> str:
     """Gets the current date from the system (YYYY-MM-DD)."""
     logger.info("Getting current date")
     return datetime.now().strftime("%Y-%m-%d")
 
 
-weekend_agent = ChatAgent(
-    chat_client=client,
+weekend_agent = client.as_agent(
+    name="WeekendPlannerAgent",
     instructions=(
         "You help users plan their weekends and choose the best activities for the given weather. "
         "If an activity would be unpleasant in the weather, don't suggest it. "
@@ -93,7 +94,7 @@ weekend_agent = ChatAgent(
     tools=[get_weather, get_activities, get_current_date],
 )
 
-
+@tool(approval_mode="never_require")
 async def plan_weekend(query: str) -> str:
     """Plan a weekend based on user query and return the final response."""
     logger.info("Tool: plan_weekend invoked")
@@ -105,7 +106,7 @@ async def plan_weekend(query: str) -> str:
 # Sub-agent 2 tools: meal planning
 # ----------------------------------------------------------------------------------
 
-
+@tool(approval_mode="never_require")
 def find_recipes(
     query: Annotated[str, Field(description="User query or desired meal/ingredient")],
 ) -> list[dict]:
@@ -137,7 +138,7 @@ def find_recipes(
         ]
     return recipes
 
-
+@tool(approval_mode="never_require")
 def check_fridge() -> list[str]:
     """Returns a JSON list of ingredients currently in the fridge."""
     logger.info("Checking fridge for current ingredients")
@@ -148,8 +149,8 @@ def check_fridge() -> list[str]:
     return items
 
 
-meal_agent = ChatAgent(
-    chat_client=client,
+meal_agent = client.as_agent(
+    name="MealPlannerAgent",
     instructions=(
         "You help users plan meals and choose the best recipes. "
         "Include the ingredients and cooking instructions in your response. "
@@ -158,7 +159,7 @@ meal_agent = ChatAgent(
     tools=[find_recipes, check_fridge],
 )
 
-
+@tool(approval_mode="never_require")
 async def plan_meal(query: str) -> str:
     """Plan a meal based on user query and return the final response."""
     logger.info("Tool: plan_meal invoked")
@@ -170,8 +171,8 @@ async def plan_meal(query: str) -> str:
 # Supervisor agent orchestrating sub-agents
 # ----------------------------------------------------------------------------------
 
-supervisor_agent = ChatAgent(
-    chat_client=client,
+supervisor_agent = client.as_agent(
+    name="SupervisorAgent",
     instructions=(
         "You are a supervisor managing two specialist agents: a weekend planning agent and a meal planning agent. "
         "Break down the user's request, decide which specialist (or both) to call via the available tools, "
