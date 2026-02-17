@@ -1,4 +1,4 @@
-# pip install agent-framework-devui==1.0.0b251016
+# pip install agent-framework-devui==1.0.0b260212
 import os
 from typing import Any
 
@@ -54,7 +54,7 @@ def necesita_edicion(message: Any) -> bool:
     if not isinstance(message, AgentExecutorResponse):
         return False
     try:
-        revision = ResultadoRevision.model_validate_json(message.agent_run_response.text)
+        revision = ResultadoRevision.model_validate_json(message.agent_response.text)
         return revision.puntaje < 80
     except Exception:
         return False
@@ -66,85 +66,101 @@ def esta_aprobado(message: Any) -> bool:
     if not isinstance(message, AgentExecutorResponse):
         return True
     try:
-        revision = ResultadoRevision.model_validate_json(message.agent_run_response.text)
+        revision = ResultadoRevision.model_validate_json(message.agent_response.text)
         return revision.puntaje >= 80
     except Exception:
         return True
 
 
 # Crear agente Escritor - genera contenido
-escritor = client.create_agent(
-    name="Escritor",
-    instructions=(
-        "Sos un excelente escritor de contenido. "
-        "Creá contenido claro y atractivo basado en la solicitud del usuario. "
-        "Enfocate en la claridad, precisión y estructura adecuada."
-    ),
-)
+def create_escritor():
+    return client.as_agent(
+        name="Escritor",
+        instructions=(
+            "Sos un excelente escritor de contenido. "
+            "Creá contenido claro y atractivo basado en la solicitud del usuario. "
+            "Enfocate en la claridad, precisión y estructura adecuada."
+        ),
+    )
+
 
 # Crear agente Revisor - evalúa y proporciona retroalimentación estructurada
-revisor = client.create_agent(
-    name="Revisor",
-    instructions=(
-        "Sos un experto revisor de contenido. "
-        "Evaluá el contenido del escritor basándote en:\n"
-        "1. Claridad - ¿Es fácil de entender?\n"
-        "2. Completitud - ¿Aborda completamente el tema?\n"
-        "3. Precisión - ¿Es correcta la información?\n"
-        "4. Estructura - ¿Está bien organizado?\n\n"
-        "Devolvé un objeto JSON con:\n"
-        "- puntaje: calidad general (0-100)\n"
-        "- retroalimentacion: retroalimentación concisa y accionable\n"
-        "- claridad, completitud, precision, estructura: puntajes individuales (0-100)"
-    ),
-    response_format=ResultadoRevision,
-)
+def create_revisor():
+    return client.as_agent(
+        name="Revisor",
+        instructions=(
+            "Sos un experto revisor de contenido. "
+            "Evaluá el contenido del escritor basándote en:\n"
+            "1. Claridad - ¿Es fácil de entender?\n"
+            "2. Completitud - ¿Aborda completamente el tema?\n"
+            "3. Precisión - ¿Es correcta la información?\n"
+            "4. Estructura - ¿Está bien organizado?\n\n"
+            "Devolvé un objeto JSON con:\n"
+            "- puntaje: calidad general (0-100)\n"
+            "- retroalimentacion: retroalimentación concisa y accionable\n"
+            "- claridad, completitud, precision, estructura: puntajes individuales (0-100)"
+        ),
+        response_format=ResultadoRevision,
+    )
+
 
 # Crear agente Editor - mejora el contenido basándose en la retroalimentación
-editor = client.create_agent(
-    name="Editor",
-    instructions=(
-        "Sos un editor habilidoso. "
-        "Recibirás contenido junto con retroalimentación de revisión. "
-        "Mejorá el contenido abordando todos los problemas mencionados en la retroalimentación. "
-        "Mantené la intención original mientras mejorás la claridad, completitud, precisión y estructura."
-    ),
-)
+def create_editor():
+    return client.as_agent(
+        name="Editor",
+        instructions=(
+            "Sos un editor habilidoso. "
+            "Recibirás contenido junto con retroalimentación de revisión. "
+            "Mejorá el contenido abordando todos los problemas mencionados en la retroalimentación. "
+            "Mantené la intención original mientras mejorás la claridad, completitud, precisión y estructura."
+        ),
+    )
+
 
 # Crear agente Publicador - formatea el contenido para publicación
-publicador = client.create_agent(
-    name="Publicador",
-    instructions=(
-        "Sos un agente de publicación. "
-        "Recibís contenido aprobado o editado. "
-        "Formatealo para publicación con encabezados y estructura adecuados."
-    ),
-)
+def create_publicador():
+    return client.as_agent(
+        name="Publicador",
+        instructions=(
+            "Sos un agente de publicación. "
+            "Recibís contenido aprobado o editado. "
+            "Formatealo para publicación con encabezados y estructura adecuados."
+        ),
+    )
+
 
 # Crear agente Resumidor - crea el informe final de publicación
-resumidor = client.create_agent(
-    name="Resumidor",
-    instructions=(
-        "Sos un agente resumidor. "
-        "Creá un informe de publicación final que incluya:\n"
-        "1. Un breve resumen del contenido publicado\n"
-        "2. El camino del flujo de trabajo seguido (aprobación directa o editado)\n"
-        "3. Aspectos destacados y conclusiones clave\n"
-        "Mantené la concisión y profesionalismo."
-    ),
-)
+def create_resumidor():
+    return client.as_agent(
+        name="Resumidor",
+        instructions=(
+            "Sos un agente resumidor. "
+            "Creá un informe de publicación final que incluya:\n"
+            "1. Un breve resumen del contenido publicado\n"
+            "2. El camino del flujo de trabajo seguido (aprobación directa o editado)\n"
+            "3. Aspectos destacados y conclusiones clave\n"
+            "Mantené la concisión y profesionalismo."
+        ),
+    )
+
 
 # Construir flujo de trabajo con ramificación y convergencia:
 # Escritor → Revisor → [ramas]:
 #   - Si puntaje >= 80: → Publicador → Resumidor (ruta de aprobación directa)
 #   - Si puntaje < 80: → Editor → Publicador → Resumidor (ruta de mejora)
 # Ambas rutas convergen en Resumidor para el informe final
+escritor = create_escritor()
+revisor = create_revisor()
+editor = create_editor()
+publicador = create_publicador()
+resumidor = create_resumidor()
+
 flujo_trabajo = (
     WorkflowBuilder(
         name="Flujo de Trabajo de Revisión de Contenido",
         description="Creación de contenido con enrutamiento basado en calidad (Escritor → Revisor → Editor/Publicador)",
+        start_executor=escritor,
     )
-    .set_start_executor(escritor)
     .add_edge(escritor, revisor)
     # Rama 1: Alta calidad (>= 80) va directamente al publicador
     .add_edge(revisor, publicador, condition=esta_aprobado)
