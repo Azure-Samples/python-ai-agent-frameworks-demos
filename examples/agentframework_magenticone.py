@@ -1,19 +1,15 @@
 """
 Agent Framework MagenticOne Example - Travel Planning with Multiple Agents
+pip install agent-framework-orchestrations==1.0.0b260212
 """
 import asyncio
+import json
 import os
+from typing import cast
 
-from agent_framework import (
-    ChatAgent,
-    MagenticAgentMessageEvent,
-    MagenticBuilder,
-    MagenticCallbackEvent,
-    MagenticCallbackMode,
-    MagenticOrchestratorMessageEvent,
-    WorkflowOutputEvent,
-)
+from agent_framework import Agent, AgentResponseUpdate, Message, WorkflowEvent
 from agent_framework.openai import OpenAIChatClient
+from agent_framework.orchestrations import MagenticBuilder, MagenticProgressLedger
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
 from rich.console import Console
@@ -52,8 +48,8 @@ else:
 console = Console()
 
 # Create the agents
-local_agent = ChatAgent(
-    chat_client=client,
+local_agent = Agent(
+    client=client,
     instructions=(
         "You are a helpful assistant that can suggest authentic and interesting local activities "
         "or places to visit for a user and can utilize any context information provided."
@@ -62,8 +58,8 @@ local_agent = ChatAgent(
     description="A local assistant that can suggest local activities or places to visit.",
 )
 
-language_agent = ChatAgent(
-    chat_client=client,
+language_agent = Agent(
+    client=client,
     instructions=(
         "You are a helpful assistant that can review travel plans, providing feedback on important/critical "
         "tips about how best to address language or communication challenges for the given destination. "
@@ -73,8 +69,8 @@ language_agent = ChatAgent(
     description="A helpful assistant that can provide language tips for a given destination.",
 )
 
-travel_summary_agent = ChatAgent(
-    chat_client=client,
+travel_summary_agent = Agent(
+    client=client,
     instructions=(
         "You are a helpful assistant that can take in all of the suggestions and advice from the other agents "
         "and provide a detailed final travel plan. You must ensure that the final plan is integrated and complete. "
@@ -85,60 +81,93 @@ travel_summary_agent = ChatAgent(
     description="A helpful assistant that can summarize the travel plan.",
 )
 
+manager_agent = Agent(
+    client=client,
+    description="Orchestrator that coordinates the research and coding workflow",
+    instructions="You coordinate a team to complete complex tasks efficiently.",
+    name="manager_agent",
+)
 
-# Event callback for streaming output with rich formatting
-async def on_event(event: MagenticCallbackEvent) -> None:
-    if isinstance(event, MagenticOrchestratorMessageEvent):
-        emoji = "✅" if event.kind == "task_ledger" else "🦠"
-        console.print(
-            Panel(
-                Markdown(event.message.text),
-                title=f"{emoji} orchestrator: {event.kind}",
-                border_style="bold green",
-                padding=(1, 2),
-            )
-        )
-    elif isinstance(event, MagenticAgentMessageEvent):
-        console.print(
-            Panel(
-                Markdown(event.message.text),
-                title=f"🤖 {event.agent_id}",
-                border_style="bold blue",
-                padding=(1, 2),
-            )
-        )
-
-
-magentic_orchestrator = (
-    MagenticBuilder()
-    .participants(
-        local_agent=local_agent,
-        language_agent=language_agent,
-        travel_summary_agent=travel_summary_agent,
-    )
-    .on_event(on_event, mode=MagenticCallbackMode.NON_STREAMING)
-    .with_standard_manager(
-        chat_client=client,
+magentic_orchestrator = MagenticBuilder(
+        participants=[local_agent, language_agent, travel_summary_agent],
+        manager_agent=manager_agent,
         max_round_count=20,
         max_stall_count=3,
         max_reset_count=2,
-    )
-    .build()
-)
+).build()
 
 
-async def main():
-    async for event in magentic_orchestrator.run_stream("Plan a half-day trip to Costa Rica"):
-        if isinstance(event, WorkflowOutputEvent):
-            final_result = event.data
+def handle_event(event: WorkflowEvent, last_message_id: str | None) -> str | None:
+    """Handle streaming events and return updated last_message_id."""
+    if event.type == "output" and isinstance(event.data, AgentResponseUpdate):
+        message_id = event.data.message_id
+        if message_id != last_message_id:
+            if last_message_id is not None:
+                console.print()
+            console.print(f"🤖 {event.executor_id}:", end=" ")
+            last_message_id = message_id
+        console.print(event.data, end="")
+        return last_message_id
+
+    elif event.type == "magentic_orchestrator":
+        console.print()
+        emoji = "✅" if event.data.event_type.name == "PROGRESS_LEDGER_UPDATED" else "🦠"
+        if isinstance(event.data.content, MagenticProgressLedger):
             console.print(
                 Panel(
-                    Markdown(final_result.text),
-                    title="🌎 final travel plan",
+                    json.dumps(event.data.content.to_dict(), indent=2),
+                    title=f"{emoji} Orchestrator: {event.data.event_type.name}",
+                    border_style="bold yellow",
+                    padding=(1, 2),
+                )
+            )
+        elif hasattr(event.data.content, "text"):
+            console.print(
+                Panel(
+                    Markdown(event.data.content.text),
+                    title=f"{emoji} Orchestrator: {event.data.event_type.name}",
                     border_style="bold green",
                     padding=(1, 2),
                 )
             )
+        else:
+            console.print(
+                Panel(
+                    Markdown(str(event.data.content)),
+                    title=f"{emoji} Orchestrator: {event.data.event_type.name}",
+                    border_style="bold green",
+                    padding=(1, 2),
+                )
+            )
+
+    return last_message_id
+
+
+def print_final_result(output_event: WorkflowEvent | None) -> None:
+    """Print the final travel plan."""
+    if output_event:
+        output_messages = cast(list[Message], output_event.data)
+        console.print(
+            Panel(
+                Markdown(output_messages[-1].text),
+                title="🌎 Final Travel Plan",
+                border_style="bold green",
+                padding=(1, 2),
+            )
+        )
+
+
+async def main():
+    last_message_id: str | None = None
+    output_event: WorkflowEvent | None = None
+
+    async for event in magentic_orchestrator.run("Plan a half-day trip to Costa Rica", stream=True):
+        last_message_id = handle_event(event, last_message_id)
+        if event.type == "output" and not isinstance(event.data, AgentResponseUpdate):
+            output_event = event
+
+    print_final_result(output_event)
+
     if async_credential:
         await async_credential.close()
 
