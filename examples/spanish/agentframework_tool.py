@@ -4,7 +4,7 @@ import os
 import random
 from typing import Annotated
 
-from agent_framework import ChatAgent
+from agent_framework import tool
 from agent_framework.openai import OpenAIChatClient
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
@@ -46,7 +46,7 @@ elif API_HOST == "ollama":
 else:
     client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-4o"))
 
-
+@tool(approval_mode="never_require")
 def get_weather(
     city: Annotated[str, Field(description="Nombre completo de la ciudad")],
 ) -> dict:
@@ -64,10 +64,10 @@ def get_weather(
         }
 
 
-agent = ChatAgent(
-    chat_client=client,
+agent = client.as_agent(
+    name="WeatherAgent",
     instructions="Eres un agente informativo. Responde a las preguntas con alegría.",
-    tools=[get_weather],
+    tools=[get_weather]
 )
 
 

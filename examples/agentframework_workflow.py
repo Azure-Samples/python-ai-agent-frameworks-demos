@@ -1,4 +1,4 @@
-# pip install agent-framework-devui==1.0.0b251016
+# pip install agent-framework-devui==1.0.0b260212
 import os
 from typing import Any
 
@@ -54,7 +54,7 @@ def needs_editing(message: Any) -> bool:
     if not isinstance(message, AgentExecutorResponse):
         return False
     try:
-        review = ReviewResult.model_validate_json(message.agent_run_response.text)
+        review = ReviewResult.model_validate_json(message.agent_response.text)
         return review.score < 80
     except Exception:
         return False
@@ -66,7 +66,7 @@ def is_approved(message: Any) -> bool:
     if not isinstance(message, AgentExecutorResponse):
         return True
     try:
-        review = ReviewResult.model_validate_json(message.agent_run_response.text)
+        review = ReviewResult.model_validate_json(message.agent_response.text)
         return review.score >= 80
     except Exception:
         return True
@@ -74,8 +74,7 @@ def is_approved(message: Any) -> bool:
 
 # Create Writer agent - generates content
 def create_writer():
-    return ChatAgent(
-        chat_client=client,
+    return client.as_agent(
         name="Writer",
         instructions=(
             "You are an excellent content writer. "
@@ -87,8 +86,7 @@ def create_writer():
 
 # Create Reviewer agent - evaluates and provides structured feedback
 def create_reviewer():
-    return ChatAgent(
-        chat_client=client,
+    return client.as_agent(
         name="Reviewer",
         instructions=(
             "You are an expert content reviewer. "
@@ -108,8 +106,7 @@ def create_reviewer():
 
 # Create Editor agent - improves content based on feedback
 def create_editor():
-    return ChatAgent(
-        chat_client=client,
+    return client.as_agent(
         name="Editor",
         instructions=(
             "You are a skilled editor. "
@@ -122,8 +119,7 @@ def create_editor():
 
 # Create Publisher agent - formats content for publication
 def create_publisher():
-    return ChatAgent(
-        chat_client=client,
+    return client.as_agent(
         name="Publisher",
         instructions=(
             "You are a publishing agent. "
@@ -135,8 +131,7 @@ def create_publisher():
 
 # Create Summarizer agent - creates final publication report
 def create_summarizer():
-    return ChatAgent(
-        chat_client=client,
+    return client.as_agent(
         name="Summarizer",
         instructions=(
             "You are a summarizer agent. "
@@ -154,25 +149,26 @@ def create_summarizer():
 #   - If score >= 80: → Publisher → Summarizer (direct approval path)
 #   - If score < 80: → Editor → Publisher → Summarizer (improvement path)
 # Both paths converge at Summarizer for final report
+writer = create_writer()
+reviewer = create_reviewer()
+editor = create_editor()
+publisher = create_publisher()
+summarizer = create_summarizer()
+
 workflow = (
     WorkflowBuilder(
         name="Content Review Workflow",
         description="Multi-agent content creation with quality-based routing (Writer→Reviewer→Editor/Publisher)",
+        start_executor=writer,
     )
-    .register_agent(create_writer, name="Writer")
-    .register_agent(create_reviewer, name="Reviewer")
-    .register_agent(create_editor, name="Editor")
-    .register_agent(create_publisher, name="Publisher")
-    .register_agent(create_summarizer, name="Summarizer")
-    .set_start_executor("Writer")
-    .add_edge("Writer", "Reviewer")
+    .add_edge(writer, reviewer)
     # Branch 1: High quality (>= 80) goes directly to publisher
-    .add_edge("Reviewer", "Publisher", condition=is_approved)
+    .add_edge(reviewer, publisher, condition=is_approved)
     # Branch 2: Low quality (< 80) goes to editor first, then publisher
-    .add_edge("Reviewer", "Editor", condition=needs_editing)
-    .add_edge("Editor", "Publisher")
+    .add_edge(reviewer, editor, condition=needs_editing)
+    .add_edge(editor, publisher)
     # Both paths converge: Publisher → Summarizer
-    .add_edge("Publisher", "Summarizer")
+    .add_edge(publisher, summarizer)
     .build()
 )
 

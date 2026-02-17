@@ -1,7 +1,7 @@
 import asyncio
 import os
 
-from agent_framework import ChatAgent
+from agent_framework import Agent
 from agent_framework.openai import OpenAIChatClient
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
@@ -35,8 +35,7 @@ elif API_HOST == "ollama":
 else:
     client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-4o"))
 
-
-agent = ChatAgent(chat_client=client, instructions="Eres un agente informativo. Responde a las preguntas con alegría.")
+agent = Agent(client=client, instructions="Eres un agente informativo. Responde a las preguntas con alegría.")
 
 
 async def main():
