@@ -239,6 +239,15 @@ You can run the examples in this repository by executing the scripts in the `exa
 | [pydanticai_mcp_http.py](examples/pydanticai_mcp_http.py) | Uses PydanticAI with an MCP HTTP server toolset for travel planning (hotel search). |
 | [pydanticai_mcp_github.py](examples/pydanticai_mcp_github.py) | Uses PydanticAI with an MCP GitHub server toolset to triage repository issues. |
 
+### AG2
+
+| Example | Description |
+| ------- | ----------- |
+| [ag2_basic.py](examples/ag2_basic.py) | Uses AG2 to build a basic informational agent. |
+| [ag2_tool.py](examples/ag2_tool.py) | Uses AG2 to build an agent with a single weather tool. |
+| [ag2_tools.py](examples/ag2_tools.py) | Uses AG2 to build a weekend planning agent with multiple tools. |
+| [ag2_supervisor.py](examples/ag2_supervisor.py) | Uses AG2 GroupChat to orchestrate activity and recipe sub-agents. |
+
 ### Other frameworks
 
 | Example | Description |
@@ -248,6 +257,7 @@ You can run the examples in this repository by executing the scripts in the `exa
 
 ## Resources
 
+* [AG2 Documentation](https://docs.ag2.ai/)
 * [Agent Framework Documentation](https://learn.microsoft.com/agent-framework/)
 * [Langchain v1 Documentation](https://docs.langchain.com/oss/python/langchain/overview)
 * [LangGraph Documentation](https://docs.langchain.com/oss/python/langgraph/overview)
