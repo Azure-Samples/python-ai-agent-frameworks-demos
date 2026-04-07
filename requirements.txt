@@ -11,7 +11,7 @@ semantic-kernel
 langgraph
 langchain>=1.2.15
 langchain_openai>=1.1.12
-pydantic-ai==1.0.8
+pydantic-ai>=1.77.0
 llama-index
 llama-index-llms-openai-like
 langchain-mcp-adapters
