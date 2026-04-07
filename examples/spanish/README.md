@@ -1,7 +1,7 @@
 <!--
 ---
 name: Python AI Agent Frameworks Demos
-description: Collection of Python examples for popular AI agent frameworks using GitHub Models or Azure OpenAI.
+description: Collection of Python examples for popular AI agent frameworks using Azure OpenAI.
 languages:
 - python
 products:
@@ -17,14 +17,13 @@ urlFragment: python-ai-agent-frameworks-demos
 [![Abrir en GitHub Codespaces](https://img.shields.io/static/v1?style=for-the-badge&label=GitHub+Codespaces&message=Open&color=brightgreen&logo=github)](https://codespaces.new/Azure-Samples/python-ai-agent-frameworks-demos)
 [![Abrir en Dev Containers](https://img.shields.io/static/v1?style=for-the-badge&label=Dev%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/Azure-Samples/python-ai-agent-frameworks-demos)
 
-Este repositorio ofrece ejemplos de muchos frameworks populares de agentes de IA en Python usando LLMs de [GitHub Models](https://github.com/marketplace/models). Estos modelos son gratuitos para cualquiera con una cuenta de GitHub, hasta un [límite diario](https://docs.github.com/github-models/prototyping-with-ai-models#rate-limits).
+Este repositorio ofrece ejemplos de muchos frameworks populares de agentes de IA en Python.
 
 * [Cómo empezar](#cómo-empezar)
   * [GitHub Codespaces](#github-codespaces)
   * [VS Code Dev Containers](#vs-code-dev-containers)
   * [Entorno local](#entorno-local)
 * [Configurar proveedores de modelos](#configurar-proveedores-de-modelos)
-  * [Usar GitHub Models](#usar-github-models)
   * [Usar modelos de Azure OpenAI](#usar-modelos-de-azure-openai)
   * [Usar modelos de OpenAI.com](#usar-modelos-de-openaicom)
   * [Usar modelos de Ollama](#usar-modelos-de-ollama)
@@ -88,33 +87,11 @@ Una opción relacionada es VS Code Dev Containers, que abrirá el proyecto en tu
 
 ## Configurar proveedores de modelos
 
-Estos ejemplos se pueden ejecutar con una cuenta de Azure OpenAI, OpenAI.com, servidor local de Ollama o modelos de GitHub, dependiendo de las variables de entorno que configures. Todos los scripts hacen referencia a las variables de entorno de un archivo `.env`, y se proporciona un archivo de ejemplo `.env.sample`. Las instrucciones específicas de cada proveedor se encuentran a continuación.
-
-## Usar GitHub Models
-
-Si abres este repositorio en GitHub Codespaces, puedes ejecutar los scripts gratis usando GitHub Models sin pasos adicionales, ya que tu `GITHUB_TOKEN` ya está configurado en el entorno de Codespaces.
-
-Si quieres ejecutar los scripts localmente, necesitas configurar la variable de entorno `GITHUB_TOKEN` con un token de acceso personal (PAT) de GitHub. Puedes crear un PAT siguiendo estos pasos:
-
-1. Ve a la configuración de tu cuenta de GitHub.
-2. Haz clic en "Developer settings" en la barra lateral izquierda.
-3. Haz clic en "Personal access tokens" en la barra lateral izquierda.
-4. Haz clic en "Tokens (classic)" o "Fine-grained tokens" según tu preferencia.
-5. Haz clic en "Generate new token".
-6. Ponle un nombre a tu token y selecciona los alcances que quieres otorgar. Para este proyecto, no necesitas alcances específicos.
-7. Haz clic en "Generate token".
-8. Copia el token generado.
-9. Configura la variable de entorno `GITHUB_TOKEN` en tu terminal o IDE:
-
-    ```shell
-    export GITHUB_TOKEN=tu_token_de_acceso_personal
-    ```
-
-10. Opcionalmente, puedes usar un modelo diferente a "gpt-4o" configurando la variable de entorno `GITHUB_MODEL`. Usa un modelo que soporte llamadas de funciones, como: `gpt-5`, `gpt-5-mini`, `gpt-4o`, `gpt-4o-mini`, `o3-mini`, `AI21-Jamba-1.5-Large`, `AI21-Jamba-1.5-Mini`, `Codestral-2501`, `Cohere-command-r`, `Ministral-3B`, `Mistral-Large-2411`, `Mistral-Nemo`, `Mistral-small`
+Estos ejemplos se pueden ejecutar con una cuenta de Azure OpenAI, OpenAI.com o servidor local de Ollama, dependiendo de las variables de entorno que configures. Todos los scripts hacen referencia a las variables de entorno de un archivo `.env`, y se proporciona un archivo de ejemplo `.env.sample`. Las instrucciones específicas de cada proveedor se encuentran a continuación.
 
 ## Usar modelos de Azure OpenAI
 
-Puedes ejecutar todos los ejemplos en este repositorio usando GitHub Models. Si quieres ejecutar los ejemplos usando modelos de Azure OpenAI, necesitas provisionar los recursos de Azure AI, lo que generará costos.
+Para ejecutar los ejemplos usando modelos de Azure OpenAI, necesitas provisionar los recursos de Azure AI, lo que generará costos.
 
 Este proyecto incluye infraestructura como código (IaC) para provisionar despliegues de Azure OpenAI de "gpt-4o" y "text-embedding-3-large". La IaC está definida en el directorio `infra` y usa Azure Developer CLI para provisionar los recursos.
 
@@ -222,7 +199,6 @@ Puedes ejecutar los ejemplos en este repositorio ejecutando los scripts en el di
 
 | Ejemplo | Descripción |
 | ------- | ----------- |
-| [openai_githubmodels.py](openai_githubmodels.py) | Configuración básica para usar modelos de GitHub con la API de OpenAI. |
 | [openai_functioncalling.py](openai_functioncalling.py) | Usa OpenAI Function Calling para llamar funciones basadas en la salida del LLM. |
 | [openai_agents_basic.py](openai_agents_basic.py) | Usa el framework de Agentes de OpenAI para crear un agente único. |
 | [openai_agents_handoffs.py](openai_agents_handoffs.py) | Usa el framework de Agentes de OpenAI para transferir entre varios agentes con herramientas. |
