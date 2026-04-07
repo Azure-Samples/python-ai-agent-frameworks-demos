@@ -29,7 +29,7 @@ def play_song_on_apple(song: str):
 tools = [play_song_on_apple, play_song_on_spotify]
 tool_node = ToolNode(tools)
 
-# Configurar el cliente para usar Azure OpenAI o modelos de GitHub
+# Configurar el cliente para usar Azure OpenAI u Ollama
 load_dotenv(override=True)
 API_HOST = os.getenv("API_HOST", "azure")
 
