@@ -83,8 +83,8 @@ def get_current_date() -> str:
 weekend_agent = create_agent(
     model=base_model,
     prompt=(
-        "Ayudas a las personas a planear su fin de semana y elegir las mejores actividades según el clima."
-        "Si una actividad sería desagradable con el clima previsto, no la sugieras."
+        "Ayudas a las personas a planear su fin de semana y elegir las mejores actividades según el clima. "
+        "Si una actividad sería desagradable con el clima previsto, no la sugieras. "
         "Incluye la fecha del fin de semana en tu respuesta."
     ),
     tools=[get_weather, get_activities, get_current_date],
@@ -152,8 +152,8 @@ def check_fridge() -> list[str]:
 meal_agent = create_agent(
     model=base_model,
     prompt=(
-        "Ayudas a las personas a planear comidas y elegir las mejores recetas."
-        "Incluye los ingredientes e instrucciones de cocina en tu respuesta."
+        "Ayudas a las personas a planear comidas y elegir las mejores recetas. "
+        "Incluye los ingredientes e instrucciones de cocina en tu respuesta. "
         "Indica lo que la persona necesita comprar cuando falten ingredientes en su refrigerador."
     ),
     tools=[find_recipes, check_fridge],
