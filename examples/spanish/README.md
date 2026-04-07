@@ -93,7 +93,7 @@ Estos ejemplos se pueden ejecutar con una cuenta de Azure OpenAI, OpenAI.com o s
 
 Para ejecutar los ejemplos usando modelos de Azure OpenAI, necesitas provisionar los recursos de Azure AI, lo que generará costos.
 
-Este proyecto incluye infraestructura como código (IaC) para provisionar despliegues de Azure OpenAI de "gpt-4o" y "text-embedding-3-large". La IaC está definida en el directorio `infra` y usa Azure Developer CLI para provisionar los recursos.
+Este proyecto incluye infraestructura como código (IaC) para provisionar despliegues de Azure OpenAI de "gpt-5.4" y "text-embedding-3-large". La IaC está definida en el directorio `infra` y usa Azure Developer CLI para provisionar los recursos.
 
 1. Asegúrate de tener instalado [Azure Developer CLI (azd)](https://aka.ms/install-azd).
 

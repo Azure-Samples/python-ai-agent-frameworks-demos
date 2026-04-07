@@ -92,7 +92,7 @@ These examples can be run with Azure OpenAI account, OpenAI.com, or local Ollama
 
 To run the examples using models from Azure OpenAI, you need to provision the Azure AI resources, which will incur costs.
 
-This project includes infrastructure as code (IaC) to provision Azure OpenAI deployments of "gpt-4o" and "text-embedding-3-large". The IaC is defined in the `infra` directory and uses the Azure Developer CLI to provision the resources.
+This project includes infrastructure as code (IaC) to provision Azure OpenAI deployments of "gpt-5.4" and "text-embedding-3-large". The IaC is defined in the `infra` directory and uses the Azure Developer CLI to provision the resources.
 
 1. Make sure the [Azure Developer CLI (azd)](https://aka.ms/install-azd) is installed.
 
