@@ -222,7 +222,6 @@ Puedes ejecutar los ejemplos en este repositorio ejecutando los scripts en el di
 | Ejemplo | Descripción |
 | ------- | ----------- |
 | [llamaindex.py](llamaindex.py) | Usa LlamaIndex para construir un agente ReAct para RAG en múltiples índices. |
-| [smolagents_codeagent.py](smolagents_codeagent.py) | Usa SmolAgents para construir un agente de respuesta a preguntas que puede buscar en la web y ejecutar código. |
 | [mcp_server_basic.py](mcp_server_basic.py) | Servidor MCP básico para exponer herramientas locales. |
 
 ## Recursos
@@ -234,4 +233,3 @@ Puedes ejecutar los ejemplos en este repositorio ejecutando los scripts en el di
 * [Documentación de OpenAI Agents](https://openai.github.io/openai-agents-python/)
 * [Documentación de OpenAI Function Calling](https://platform.openai.com/docs/guides/function-calling?api-mode=chat)
 * [Documentación de Pydantic AI](https://ai.pydantic.dev/multi-agent-applications/)
-* [Documentación de SmolAgents](https://huggingface.co/docs/smolagents/index)

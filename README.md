@@ -220,7 +220,6 @@ You can run the examples in this repository by executing the scripts in the `exa
 | Example | Description |
 | ------- | ----------- |
 | [llamaindex.py](examples/llamaindex.py) | Uses LlamaIndex to build a ReAct agent for RAG on multiple indexes. |
-| [smolagents_codeagent.py](examples/smolagents_codeagent.py) | Uses SmolAgents to build a question-answering agent that can search the web and run code. |
 
 ## Resources
 
@@ -231,4 +230,3 @@ You can run the examples in this repository by executing the scripts in the `exa
 * [OpenAI Agents Documentation](https://openai.github.io/openai-agents-python/)
 * [OpenAI Function Calling Documentation](https://platform.openai.com/docs/guides/function-calling?api-mode=chat)
 * [Pydantic AI Documentation](https://ai.pydantic.dev/multi-agent-applications/)
-* [SmolAgents Documentation](https://huggingface.co/docs/smolagents/index)
