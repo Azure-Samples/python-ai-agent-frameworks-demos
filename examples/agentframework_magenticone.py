@@ -1,6 +1,5 @@
 """
 Agent Framework MagenticOne Example - Travel Planning with Multiple Agents
-pip install agent-framework-orchestrations==1.0.0b260212
 """
 import asyncio
 import json
