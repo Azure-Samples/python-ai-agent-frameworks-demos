@@ -19,9 +19,9 @@ logging.basicConfig(level=logging.WARNING, handlers=[handler], force=True, forma
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-# Configurar el cliente para usar Azure OpenAI, GitHub Models, Ollama o OpenAI
+# Configurar el cliente para usar Azure OpenAI, Ollama u OpenAI
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 async_credential = None
 if API_HOST == "azure":
@@ -30,27 +30,22 @@ if API_HOST == "azure":
     client = OpenAIChatClient(
         base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT']}/openai/v1/",
         api_key=token_provider,
-        model_id=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
-    )
-elif API_HOST == "github":
-    client = OpenAIChatClient(
-        base_url="https://models.github.ai/inference",
-        api_key=os.environ["GITHUB_TOKEN"],
-        model_id=os.getenv("GITHUB_MODEL", "openai/gpt-4o"),
+        model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
 elif API_HOST == "ollama":
     client = OpenAIChatClient(
         base_url=os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1"),
         api_key="none",
-        model_id=os.environ.get("OLLAMA_MODEL", "llama3.1:latest"),
+        model=os.environ.get("OLLAMA_MODEL", "llama3.1:latest"),
     )
 else:
-    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-4o"))
+    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-4o"))
 
 
 # ----------------------------------------------------------------------------------
 # Subagente 1 herramientas: planificación del fin de semana
 # ----------------------------------------------------------------------------------
+
 
 @tool(approval_mode="never_require")
 def get_weather(
@@ -78,6 +73,7 @@ def get_activities(
         {"name": "Museo", "location": city},
     ]
 
+
 @tool(approval_mode="never_require")
 def get_current_date() -> str:
     """Obtiene la fecha actual del sistema (YYYY-MM-DD)."""
@@ -95,6 +91,7 @@ weekend_agent = client.as_agent(
     tools=[get_weather, get_activities, get_current_date],
 )
 
+
 @tool(approval_mode="never_require")
 async def plan_weekend(query: str) -> str:
     """Planifica un fin de semana según la consulta del usuario y devuelve la respuesta final."""
@@ -106,6 +103,7 @@ async def plan_weekend(query: str) -> str:
 # ----------------------------------------------------------------------------------
 # Subagente 2 herramientas: planificación de comidas
 # ----------------------------------------------------------------------------------
+
 
 @tool(approval_mode="never_require")
 def find_recipes(
@@ -143,6 +141,7 @@ def find_recipes(
         ]
     return recipes
 
+
 @tool(approval_mode="never_require")
 def check_fridge() -> list[str]:
     """Devuelve una lista JSON de ingredientes actualmente en el refrigerador."""
@@ -163,6 +162,7 @@ meal_agent = client.as_agent(
     ),
     tools=[find_recipes, check_fridge],
 )
+
 
 @tool(approval_mode="never_require")
 async def plan_meal(query: str) -> str:

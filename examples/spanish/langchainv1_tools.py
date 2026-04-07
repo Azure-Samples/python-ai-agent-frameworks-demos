@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.WARNING, format="%(message)s", datefmt="[%X]",
 logger = logging.getLogger("planificador_fin_de_semana")
 
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 if API_HOST == "azure":
     token_provider = azure.identity.get_bearer_token_provider(
@@ -27,21 +27,20 @@ if API_HOST == "azure":
         model=os.environ.get("AZURE_OPENAI_CHAT_DEPLOYMENT"),
         base_url=os.environ["AZURE_OPENAI_ENDPOINT"] + "/openai/v1/",
         api_key=token_provider,
-    )
-elif API_HOST == "github":
-    model = ChatOpenAI(
-        model=os.getenv("GITHUB_MODEL", "gpt-4o"),
-        base_url="https://models.inference.ai.azure.com",
-        api_key=os.environ.get("GITHUB_TOKEN"),
+        use_responses_api=True,
     )
 elif API_HOST == "ollama":
     model = ChatOpenAI(
         model=os.environ.get("OLLAMA_MODEL", "llama3.1"),
         base_url=os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1"),
         api_key="none",
+        use_responses_api=True,
     )
 else:
-    model = ChatOpenAI(model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"))
+    model = ChatOpenAI(
+        model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+        use_responses_api=True,
+    )
 
 
 @tool
@@ -80,13 +79,19 @@ def get_current_date() -> str:
 
 agent = create_agent(
     model=model,
-    prompt="Ayudas a las personas a planear su fin de semana y elegir las mejores actividades según el clima. Si una actividad sería desagradable con el clima previsto, no la sugieras. Incluye la fecha del fin de semana en tu respuesta.",
+    prompt=(
+        "Ayudas a las personas a planear su fin de semana y elegir las mejores actividades según el clima."
+        " Si una actividad sería desagradable con el clima previsto, no la sugieras."
+        " Incluye la fecha del fin de semana en tu respuesta."
+    ),
     tools=[get_weather, get_activities, get_current_date],
 )
 
 
 def main():
-    response = agent.invoke({"messages": [{"role": "user", "content": "Hola, ¿qué puedo hacer este fin de semana en San Francisco?"}]})
+    response = agent.invoke(
+        {"messages": [{"role": "user", "content": "Hola, ¿qué puedo hacer este fin de semana en San Francisco?"}]}
+    )
     latest_message = response["messages"][-1]
     print(latest_message.content)
 

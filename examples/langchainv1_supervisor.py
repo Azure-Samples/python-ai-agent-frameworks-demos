@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.WARNING, format="%(message)s", datefmt="[%X]",
 logger = logging.getLogger("lang_triage")
 
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 if API_HOST == "azure":
     token_provider = azure.identity.get_bearer_token_provider(
@@ -27,21 +27,20 @@ if API_HOST == "azure":
         model=os.environ.get("AZURE_OPENAI_CHAT_DEPLOYMENT"),
         base_url=os.environ["AZURE_OPENAI_ENDPOINT"] + "/openai/v1",
         api_key=token_provider,
-    )
-elif API_HOST == "github":
-    base_model = ChatOpenAI(
-        model=os.getenv("GITHUB_MODEL", "gpt-4o"),
-        base_url="https://models.inference.ai.azure.com",
-        api_key=os.environ.get("GITHUB_TOKEN"),
+        use_responses_api=True,
     )
 elif API_HOST == "ollama":
     base_model = ChatOpenAI(
         model=os.environ.get("OLLAMA_MODEL", "llama3.1"),
         base_url=os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1"),
         api_key="none",
+        use_responses_api=True,
     )
 else:
-    base_model = ChatOpenAI(model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"))
+    base_model = ChatOpenAI(
+        model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+        use_responses_api=True,
+    )
 
 
 # ----------------------------------------------------------------------------------
@@ -83,7 +82,11 @@ def get_current_date() -> str:
 
 weekend_agent = create_agent(
     model=base_model,
-    system_prompt=("You help users plan their weekends and choose the best activities for the given weather." "If an activity would be unpleasant in the weather, don't suggest it." "Include the date of the weekend in your response."),
+    system_prompt=(
+        "You help users plan their weekends and choose the best activities for the given weather."
+        "If an activity would be unpleasant in the weather, don't suggest it."
+        "Include the date of the weekend in your response."
+    ),
     tools=[get_weather, get_activities, get_current_date],
 )
 
@@ -144,7 +147,11 @@ def check_fridge() -> list[str]:
 
 meal_agent = create_agent(
     model=base_model,
-    system_prompt=("You help users plan meals and choose the best recipes." "Include the ingredients and cooking instructions in your response." "Indicate what user needs to buy from store when their fridge is missing ingredients."),
+    system_prompt=(
+        "You help users plan meals and choose the best recipes."
+        "Include the ingredients and cooking instructions in your response."
+        "Indicate what user needs to buy from store when their fridge is missing ingredients."
+    ),
     tools=[find_recipes, check_fridge],
 )
 
@@ -163,7 +170,10 @@ def plan_meal(query: str) -> str:
 # ----------------------------------------------------------------------------------
 supervisor_agent = create_agent(
     model=base_model,
-    system_prompt=("You are a supervisor, managing an activity planning agent and recipe planning agent." "Assign work to them as needed in order to answer user's question."),
+    system_prompt=(
+        "You are a supervisor, managing an activity planning agent and recipe planning agent."
+        "Assign work to them as needed in order to answer user's question."
+    ),
     tools=[plan_weekend, plan_meal],
 )
 

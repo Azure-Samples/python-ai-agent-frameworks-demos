@@ -31,20 +31,24 @@ tool_node = ToolNode(tools)
 
 # Configurar el cliente para usar Azure OpenAI o modelos de GitHub
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 if API_HOST == "azure":
-    token_provider = azure.identity.get_bearer_token_provider(azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default")
+    token_provider = azure.identity.get_bearer_token_provider(
+        azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"
+    )
     model = ChatOpenAI(
         model=os.environ.get("AZURE_OPENAI_CHAT_DEPLOYMENT"),
         base_url=os.environ["AZURE_OPENAI_ENDPOINT"] + "/openai/v1/",
         api_key=token_provider,
+        use_responses_api=True,
     )
-else:
+elif API_HOST == "ollama":
     model = ChatOpenAI(
-        model=os.getenv("GITHUB_MODEL", "gpt-4o"),
-        base_url="https://models.inference.ai.azure.com",
-        api_key=os.environ["GITHUB_TOKEN"],
+        model=os.environ["OLLAMA_MODEL"],
+        base_url=os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1"),
+        api_key="none",
+        use_responses_api=True,
     )
 
 model = model.bind_tools(tools, parallel_tool_calls=False)

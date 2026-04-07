@@ -14,22 +14,19 @@ from langchain_openai import ChatOpenAI
 from langgraph.graph import START, MessagesState, StateGraph
 from langgraph.prebuilt import ToolNode, tools_condition
 
-# Configuración del cliente para usar Azure OpenAI o GitHub Models
+# Configuración del cliente para usar Azure OpenAI
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 if API_HOST == "azure":
-    token_provider = azure.identity.get_bearer_token_provider(azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default")
+    token_provider = azure.identity.get_bearer_token_provider(
+        azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"
+    )
     model = ChatOpenAI(
         model=os.environ.get("AZURE_OPENAI_CHAT_DEPLOYMENT"),
         base_url=os.environ["AZURE_OPENAI_ENDPOINT"] + "/openai/v1/",
         api_key=token_provider,
-    )
-else:
-    model = ChatOpenAI(
-        model=os.getenv("GITHUB_MODEL", "gpt-4o"),
-        base_url="https://models.inference.ai.azure.com",
-        api_key=os.environ["GITHUB_TOKEN"],
+        use_responses_api=True,
     )
 
 
@@ -59,7 +56,9 @@ async def setup_agent():
     )
     builder.add_edge("tools", "call_model")
     graph = builder.compile()
-    hotel_response = await graph.ainvoke({"messages": "Encuentra un hotel en SF para 2 noches comenzando el 2024-01-01. Necesito WiFi gratis y piscina."})
+    hotel_response = await graph.ainvoke(
+        {"messages": "Encuentra un hotel en SF para 2 noches comenzando el 2024-01-01. Necesito WiFi gratis y piscina."}
+    )
     print(hotel_response["messages"][-1].content)
     image_bytes = graph.get_graph().draw_mermaid_png()
     with open("examples/images/langgraph_mcp_http_graph.png", "wb") as f:

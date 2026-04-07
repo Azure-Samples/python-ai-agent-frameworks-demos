@@ -9,7 +9,7 @@ import asyncio
 import logging
 import os
 
-from agents import Agent, OpenAIChatCompletionsModel, Runner, set_tracing_disabled
+from agents import Agent, OpenAIResponsesModel, Runner, set_tracing_disabled
 from agents.mcp.server import MCPServerStreamableHttp
 from agents.model_settings import ModelSettings
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
@@ -20,9 +20,9 @@ logging.basicConfig(level=logging.WARNING)
 # Desactivar tracing ya que no estamos conectados a un proveedor de tracing soportado
 set_tracing_disabled(disabled=True)
 
-# Configuración del cliente OpenAI para usar Azure OpenAI o GitHub Models
+# Configuración del cliente OpenAI para usar Azure OpenAI
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 async_credential = None
 if API_HOST == "azure":
@@ -33,9 +33,6 @@ if API_HOST == "azure":
         api_key=token_provider,
     )
     MODEL_NAME = os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"]
-elif API_HOST == "github":
-    client = AsyncOpenAI(api_key=os.environ["GITHUB_TOKEN"], base_url="https://models.inference.ai.azure.com")
-    MODEL_NAME = os.getenv("GITHUB_MODEL", "gpt-4o")
 elif API_HOST == "ollama":
     client = AsyncOpenAI(base_url=os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1"), api_key="none")
     MODEL_NAME = os.environ["OLLAMA_MODEL"]
@@ -50,7 +47,7 @@ agent = Agent(
     name="Asistente",
     instructions="Usa las herramientas para lograr la tarea",
     mcp_servers=[mcp_server],
-    model=OpenAIChatCompletionsModel(model=MODEL_NAME, openai_client=client),
+    model=OpenAIResponsesModel(model=MODEL_NAME, openai_client=client),
     model_settings=ModelSettings(tool_choice="required"),
 )
 

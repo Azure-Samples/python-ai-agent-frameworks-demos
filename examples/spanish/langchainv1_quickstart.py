@@ -17,10 +17,11 @@ from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.runtime import get_runtime
+from pydantic import BaseModel
 from rich import print
 
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 if API_HOST == "azure":
     token_provider = azure.identity.get_bearer_token_provider(
@@ -31,21 +32,20 @@ if API_HOST == "azure":
         model=os.environ.get("AZURE_OPENAI_CHAT_DEPLOYMENT"),
         base_url=os.environ["AZURE_OPENAI_ENDPOINT"] + "/openai/v1/",
         api_key=token_provider,
-    )
-elif API_HOST == "github":
-    model = ChatOpenAI(
-        model=os.getenv("GITHUB_MODEL", "gpt-4o"),
-        base_url="https://models.inference.ai.azure.com",
-        api_key=os.environ.get("GITHUB_TOKEN"),
+        use_responses_api=True,
     )
 elif API_HOST == "ollama":
     model = ChatOpenAI(
         model=os.environ.get("OLLAMA_MODEL", "llama3.1"),
         base_url=os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1"),
         api_key="none",
+        use_responses_api=True,
     )
 else:
-    model = ChatOpenAI(model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"))
+    model = ChatOpenAI(
+        model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+        use_responses_api=True,
+    )
 
 
 system_prompt = """Eres un experto meteorólogo que habla con juegos de palabras.
@@ -85,8 +85,7 @@ def get_user_info(config: RunnableConfig) -> str:
     return USER_LOCATION[user_id]
 
 
-@dataclass
-class WeatherResponse:
+class WeatherResponse(BaseModel):
     conditions: str
     punny_response: str
 
@@ -106,7 +105,9 @@ def main():
     config = {"configurable": {"thread_id": "1"}}
     context = UserContext(user_id="1")
 
-    r1 = agent.invoke({"messages": [{"role": "user", "content": "¿Qué clima hace afuera?"}]}, config=config, context=context)
+    r1 = agent.invoke(
+        {"messages": [{"role": "user", "content": "¿Qué clima hace afuera?"}]}, config=config, context=context
+    )
     print(r1.get("structured_response"))
 
     r2 = agent.invoke(

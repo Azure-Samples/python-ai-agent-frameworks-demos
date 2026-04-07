@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.WARNING, format="%(message)s", datefmt="[%X]",
 logger = logging.getLogger("triaje_lang")
 
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 if API_HOST == "azure":
     token_provider = azure.identity.get_bearer_token_provider(
@@ -27,21 +27,20 @@ if API_HOST == "azure":
         model=os.environ.get("AZURE_OPENAI_CHAT_DEPLOYMENT"),
         base_url=os.environ["AZURE_OPENAI_ENDPOINT"] + "/openai/v1/",
         api_key=token_provider,
-    )
-elif API_HOST == "github":
-    base_model = ChatOpenAI(
-        model=os.getenv("GITHUB_MODEL", "gpt-4o"),
-        base_url="https://models.inference.ai.azure.com",
-        api_key=os.environ.get("GITHUB_TOKEN"),
+        use_responses_api=True,
     )
 elif API_HOST == "ollama":
     base_model = ChatOpenAI(
         model=os.environ.get("OLLAMA_MODEL", "llama3.1"),
         base_url=os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1"),
         api_key="none",
+        use_responses_api=True,
     )
 else:
-    base_model = ChatOpenAI(model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"))
+    base_model = ChatOpenAI(
+        model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+        use_responses_api=True,
+    )
 
 
 # ----------------------------------------------------------------------------------
@@ -83,7 +82,11 @@ def get_current_date() -> str:
 
 weekend_agent = create_agent(
     model=base_model,
-    prompt=("Ayudas a las personas a planear su fin de semana y elegir las mejores actividades según el clima." "Si una actividad sería desagradable con el clima previsto, no la sugieras." "Incluye la fecha del fin de semana en tu respuesta."),
+    prompt=(
+        "Ayudas a las personas a planear su fin de semana y elegir las mejores actividades según el clima."
+        "Si una actividad sería desagradable con el clima previsto, no la sugieras."
+        "Incluye la fecha del fin de semana en tu respuesta."
+    ),
     tools=[get_weather, get_activities, get_current_date],
 )
 
@@ -148,7 +151,11 @@ def check_fridge() -> list[str]:
 
 meal_agent = create_agent(
     model=base_model,
-    prompt=("Ayudas a las personas a planear comidas y elegir las mejores recetas." "Incluye los ingredientes e instrucciones de cocina en tu respuesta." "Indica lo que la persona necesita comprar cuando falten ingredientes en su refrigerador."),
+    prompt=(
+        "Ayudas a las personas a planear comidas y elegir las mejores recetas."
+        "Incluye los ingredientes e instrucciones de cocina en tu respuesta."
+        "Indica lo que la persona necesita comprar cuando falten ingredientes en su refrigerador."
+    ),
     tools=[find_recipes, check_fridge],
 )
 
@@ -167,13 +174,19 @@ def plan_meal(query: str) -> str:
 # ----------------------------------------------------------------------------------
 supervisor_agent = create_agent(
     model=base_model,
-    prompt=("Eres un supervisor que gestiona un agente de planificación de actividades y un agente de planificación de recetas." "Asígnales trabajo según sea necesario para responder la pregunta del usuario."),
+    prompt=(
+        "Eres un supervisor que gestiona un agente de planificación de actividades"
+        " y un agente de planificación de recetas."
+        " Asígnales trabajo según sea necesario para responder la pregunta del usuario."
+    ),
     tools=[plan_weekend, plan_meal],
 )
 
 
 def main():
-    response = supervisor_agent.invoke({"messages": [{"role": "user", "content": "mis hijos quieren pasta para la cena"}]})
+    response = supervisor_agent.invoke(
+        {"messages": [{"role": "user", "content": "mis hijos quieren pasta para la cena"}]}
+    )
     latest_message = response["messages"][-1]
     print(latest_message.content)
 

@@ -1,7 +1,7 @@
 import asyncio
 import os
 
-from agents import Agent, OpenAIChatCompletionsModel, Runner, function_tool, set_tracing_disabled
+from agents import Agent, OpenAIResponsesModel, Runner, function_tool, set_tracing_disabled
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
 from openai import AsyncOpenAI
@@ -9,9 +9,9 @@ from openai import AsyncOpenAI
 # Disable tracing since we're not using OpenAI.com models
 set_tracing_disabled(disabled=True)
 
-# Setup the OpenAI client to use either Azure OpenAI or GitHub Models
+# Setup the OpenAI client to use either Azure OpenAI
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 async_credential = None
 if API_HOST == "azure":
@@ -22,9 +22,6 @@ if API_HOST == "azure":
         api_key=token_provider,
     )
     MODEL_NAME = os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"]
-elif API_HOST == "github":
-    client = AsyncOpenAI(api_key=os.environ["GITHUB_TOKEN"], base_url="https://models.inference.ai.azure.com")
-    MODEL_NAME = os.getenv("GITHUB_MODEL", "gpt-4o")
 elif API_HOST == "ollama":
     client = AsyncOpenAI(base_url=os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1"), api_key="none")
     MODEL_NAME = os.environ["OLLAMA_MODEL"]
@@ -52,21 +49,21 @@ spanish_agent = Agent(
     name="Spanish agent",
     instructions="You only speak Spanish.",
     tools=[get_weather],
-    model=OpenAIChatCompletionsModel(model=MODEL_NAME, openai_client=client),
+    model=OpenAIResponsesModel(model=MODEL_NAME, openai_client=client),
 )
 
 english_agent = Agent(
     name="English agent",
     instructions="You only speak English",
     tools=[get_weather],
-    model=OpenAIChatCompletionsModel(model=MODEL_NAME, openai_client=client),
+    model=OpenAIResponsesModel(model=MODEL_NAME, openai_client=client),
 )
 
 triage_agent = Agent(
     name="Triage agent",
     instructions="Handoff to the appropriate agent based on the language of the request.",
     handoffs=[spanish_agent, english_agent],
-    model=OpenAIChatCompletionsModel(model=MODEL_NAME, openai_client=client),
+    model=OpenAIResponsesModel(model=MODEL_NAME, openai_client=client),
 )
 
 

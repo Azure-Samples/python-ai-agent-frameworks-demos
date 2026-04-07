@@ -15,11 +15,10 @@ from dotenv import load_dotenv
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
-from rich.rule import Rule
 
 # Configure OpenAI client based on environment
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 async_credential = None
 if API_HOST == "azure":
@@ -28,22 +27,16 @@ if API_HOST == "azure":
     client = OpenAIChatClient(
         base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT']}/openai/v1/",
         api_key=token_provider,
-        model_id=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
-    )
-elif API_HOST == "github":
-    client = OpenAIChatClient(
-        base_url="https://models.github.ai/inference",
-        api_key=os.environ["GITHUB_TOKEN"],
-        model_id=os.getenv("GITHUB_MODEL", "openai/gpt-4o"),
+        model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
 elif API_HOST == "ollama":
     client = OpenAIChatClient(
         base_url=os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1"),
         api_key="none",
-        model_id=os.environ.get("OLLAMA_MODEL", "llama3.1:latest"),
+        model=os.environ.get("OLLAMA_MODEL", "llama3.1:latest"),
     )
 else:
-    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-4o"))
+    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-4o"))
 
 # Initialize rich console
 console = Console()
@@ -90,11 +83,11 @@ manager_agent = Agent(
 )
 
 magentic_orchestrator = MagenticBuilder(
-        participants=[local_agent, language_agent, travel_summary_agent],
-        manager_agent=manager_agent,
-        max_round_count=20,
-        max_stall_count=3,
-        max_reset_count=2,
+    participants=[local_agent, language_agent, travel_summary_agent],
+    manager_agent=manager_agent,
+    max_round_count=20,
+    max_stall_count=3,
+    max_reset_count=2,
 ).build()
 
 

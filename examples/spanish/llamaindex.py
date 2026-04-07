@@ -9,48 +9,41 @@ from llama_index.core import Settings, SimpleDirectoryReader, StorageContext, Ve
 from llama_index.core.agent.workflow import AgentStream, ReActAgent
 from llama_index.core.tools import QueryEngineTool
 from llama_index.core.workflow import Context
-from llama_index.embeddings.azure_openai import AzureOpenAIEmbedding
 from llama_index.embeddings.openai import OpenAIEmbedding
-from llama_index.llms.azure_openai import AzureOpenAI
 from llama_index.llms.openai_like import OpenAILike
 
-# Configuramos el cliente para usar Azure OpenAI o Modelos de GitHub
+# Configuramos el cliente para usar Azure OpenAI
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 if API_HOST == "azure":
     token_provider = azure.identity.get_bearer_token_provider(
         azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"
     )
-    Settings.llm = AzureOpenAI(
-        model=os.environ["AZURE_OPENAI_CHAT_MODEL"],
-        deployment_name=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
-        azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
-        api_version=os.environ["AZURE_OPENAI_VERSION"],
-        use_azure_ad=True,
-        azure_ad_token_provider=token_provider,
-    )
-
-    Settings.embed_model = AzureOpenAIEmbedding(
-        model=os.environ["AZURE_OPENAI_EMBEDDING_MODEL"],
-        deployment_name=os.environ["AZURE_OPENAI_EMBEDDING_DEPLOYMENT"],
-        azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
-        api_version=os.environ["AZURE_OPENAI_VERSION"],
-        use_azure_ad=True,
-        azure_ad_token_provider=token_provider,
-    )
-else:
     Settings.llm = OpenAILike(
-        model=os.getenv("GITHUB_MODEL", "gpt-4o"),
-        api_base="https://models.inference.ai.azure.com",
-        api_key=os.environ["GITHUB_TOKEN"],
+        model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
+        api_base=os.environ["AZURE_OPENAI_ENDPOINT"] + "/openai/v1",
+        api_key=token_provider(),
         is_chat_model=True,
     )
 
     Settings.embed_model = OpenAIEmbedding(
-        model="text-embedding-3-small",
-        api_base="https://models.inference.ai.azure.com",
-        api_key=os.environ["GITHUB_TOKEN"],
+        model=os.environ["AZURE_OPENAI_EMBEDDING_DEPLOYMENT"],
+        api_base=os.environ["AZURE_OPENAI_ENDPOINT"] + "/openai/v1",
+        api_key=token_provider(),
+    )
+elif API_HOST == "ollama":
+    Settings.llm = OpenAILike(
+        model=os.environ.get("OLLAMA_MODEL", "llama3.1"),
+        api_base=os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1"),
+        api_key="none",
+        is_chat_model=True,
+    )
+
+    Settings.embed_model = OpenAIEmbedding(
+        model="nomic-embed-text",
+        api_base=os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1"),
+        api_key="none",
     )
 
 # Intentamos cargar el índice desde el almacenamiento
@@ -84,7 +77,8 @@ query_engine_tools = [
         query_engine=engine1,
         name="engine1",
         description=(
-            "Proporciona información sobre el manual para empleados de Contoso - cubre roles básicos de trabajo, políticas, seguridad laboral, RRHH, etc."
+            "Proporciona información sobre el manual para empleados de Contoso"
+            " - cubre roles básicos de trabajo, políticas, seguridad laboral, RRHH, etc."
         ),
     ),
     QueryEngineTool.from_defaults(

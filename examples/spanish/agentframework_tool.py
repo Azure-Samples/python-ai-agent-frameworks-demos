@@ -18,9 +18,9 @@ logging.basicConfig(level=logging.WARNING, handlers=[handler], force=True, forma
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-# Configurar el cliente para usar Azure OpenAI, GitHub Models, Ollama o OpenAI
+# Configurar el cliente para usar Azure OpenAI, Ollama u OpenAI
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 async_credential = None
 if API_HOST == "azure":
@@ -29,22 +29,17 @@ if API_HOST == "azure":
     client = OpenAIChatClient(
         base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT']}/openai/v1/",
         api_key=token_provider,
-        model_id=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
-    )
-elif API_HOST == "github":
-    client = OpenAIChatClient(
-        base_url="https://models.github.ai/inference",
-        api_key=os.environ["GITHUB_TOKEN"],
-        model_id=os.getenv("GITHUB_MODEL", "openai/gpt-4o"),
+        model=os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"],
     )
 elif API_HOST == "ollama":
     client = OpenAIChatClient(
         base_url=os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1"),
         api_key="none",
-        model_id=os.environ.get("OLLAMA_MODEL", "llama3.1:latest"),
+        model=os.environ.get("OLLAMA_MODEL", "llama3.1:latest"),
     )
 else:
-    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model_id=os.environ.get("OPENAI_MODEL", "gpt-4o"))
+    client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-4o"))
+
 
 @tool(approval_mode="never_require")
 def get_weather(
@@ -67,7 +62,7 @@ def get_weather(
 agent = client.as_agent(
     name="WeatherAgent",
     instructions="Eres un agente informativo. Responde a las preguntas con alegría.",
-    tools=[get_weather]
+    tools=[get_weather],
 )
 
 
