@@ -79,15 +79,11 @@ Una opción relacionada es VS Code Dev Containers, que abrirá el proyecto en tu
 
 3. Configura un entorno virtual:
 
+3. Crea un entorno virtual e instala las dependencias:
+
     ```shell
-    python -m venv .venv
+    uv sync
     source .venv/bin/activate  # En Windows: .venv\Scripts\activate
-    ```
-
-4. Instala los requisitos:
-
-    ```shell
-    pip install -r requirements.txt
     ```
 
 ## Configurar proveedores de modelos

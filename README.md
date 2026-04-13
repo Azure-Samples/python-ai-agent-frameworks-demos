@@ -79,14 +79,11 @@ A related option is VS Code Dev Containers, which will open the project in your 
 3. Set up a virtual environment:
 
     ```shell
-    python -m venv .venv
-    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-    ```
-
-4. Install the requirements:
+3. Create a virtual environment and install dependencies:
 
     ```shell
-    pip install -r requirements.txt
+    uv sync
+    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
     ```
 
 ## Configuring model providers
