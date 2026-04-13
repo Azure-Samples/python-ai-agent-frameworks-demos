@@ -47,7 +47,7 @@ Puedes ejecutar este repositorio virtualmente usando GitHub Codespaces. Haz clic
 
 [![Abrir en GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/Azure-Samples/python-ai-agent-frameworks-demos?devcontainer_path=.devcontainer/ollama/devcontainer.json)
 
-El Codespace de Ollama pre-instala Ollama y descarga el modelo `gemma4:e2b`, y copia `.env.sample.ollama` como tu archivo `.env`. Ten en cuenta que el requisito de 64GB de memoria consumirá tu cuota de Codespace más rápido.
+El Codespace de Ollama pre-instala Ollama y descarga el modelo `gemma4:e4b`, y copia `.env.sample.ollama` como tu archivo `.env`. Ten en cuenta que el requisito de 64GB de memoria consumirá tu cuota de Codespace más rápido.
 
 Una vez abierto el Codespace, abre una terminal y continúa con los pasos para ejecutar los ejemplos.
 
@@ -163,7 +163,7 @@ Este proyecto incluye infraestructura como código (IaC) para provisionar despli
     ```bash
     API_HOST=ollama
     OLLAMA_ENDPOINT=http://localhost:11434/v1
-    OLLAMA_MODEL=gemma4:e2b
+    OLLAMA_MODEL=gemma4:e4b
     ```
 
 ## Ejecutar los ejemplos en Python

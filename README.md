@@ -46,7 +46,7 @@ You can run this repository virtually by using GitHub Codespaces. Click one of t
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/Azure-Samples/python-ai-agent-frameworks-demos?devcontainer_path=.devcontainer/ollama/devcontainer.json)
 
-The Ollama Codespace pre-installs Ollama and pulls the `gemma4:e2b` model, and copies `.env.sample.ollama` as your `.env` file. Note that the 64GB memory requirement will consume your Codespace quota faster.
+The Ollama Codespace pre-installs Ollama and pulls the `gemma4:e4b` model, and copies `.env.sample.ollama` as your `.env` file. Note that the 64GB memory requirement will consume your Codespace quota faster.
 
 Once the Codespace is open, open a terminal window and continue with the steps to run the examples.
 
@@ -163,7 +163,7 @@ This project includes infrastructure as code (IaC) to provision Azure OpenAI dep
     ```bash
     API_HOST=ollama
     OLLAMA_ENDPOINT=http://localhost:11434/v1
-    OLLAMA_MODEL=gemma4:e2b
+    OLLAMA_MODEL=gemma4:e4b
     ```
 
 ## Running the Python examples

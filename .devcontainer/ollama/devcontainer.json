@@ -7,7 +7,7 @@
     "features": {
         "ghcr.io/azure/azure-dev/azd:latest": {},
         "ghcr.io/prulloac/devcontainer-features/ollama:1": {
-            "pull": "gemma4:e2b"
+            "pull": "gemma4:e4b"
         }
     },
     "postCreateCommand": "uv sync && ([ -f .env ] || cp .env.sample.ollama .env)",
