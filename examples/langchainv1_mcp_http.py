@@ -34,7 +34,7 @@ if API_HOST == "azure":
     )
 elif API_HOST == "ollama":
     model = ChatOpenAI(
-        model=os.environ.get("OLLAMA_MODEL", "llama3.1"),
+        model=os.environ.get("OLLAMA_MODEL", "gemma4:e2b"),
         base_url=os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1"),
         api_key="none",
         use_responses_api=True,

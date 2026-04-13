@@ -32,7 +32,7 @@ elif API_HOST == "ollama":
     client = OpenAIChatClient(
         base_url=os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1"),
         api_key="none",
-        model=os.environ.get("OLLAMA_MODEL", "llama3.1:latest"),
+        model=os.environ.get("OLLAMA_MODEL", "gemma4:e2b"),
     )
 else:
     client = OpenAIChatClient(api_key=os.environ["OPENAI_API_KEY"], model=os.environ.get("OPENAI_MODEL", "gpt-4o"))
