@@ -1,12 +1,16 @@
 {
-    "name": "python-ai-agent-frameworks-demos",
+    "name": "python-ai-agent-frameworks-demos (Ollama)",
     "build": {
         "dockerfile": "Dockerfile",
-        "context": ".."
+        "context": "../.."
     },
     "features": {
-        "ghcr.io/azure/azure-dev/azd:latest": {}
+        "ghcr.io/azure/azure-dev/azd:latest": {},
+        "ghcr.io/prulloac/devcontainer-features/ollama:1": {
+            "pull": "gemma4:e4b"
+        }
     },
+    "postCreateCommand": "uv sync && ([ -f .env ] || cp .env.sample.ollama .env)",
     "customizations": {
         "vscode": {
             "settings": {
@@ -21,6 +25,8 @@
             ]
         }
     },
-    "postCreateCommand": "uv sync",
+    "hostRequirements": {
+        "memory": "64gb"
+    },
     "remoteUser": "vscode"
 }

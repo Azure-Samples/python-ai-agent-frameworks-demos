@@ -37,14 +37,19 @@ La forma más rápida es usar GitHub Codespaces, ya que te configurará todo aut
 
 ### GitHub Codespaces
 
-Puedes ejecutar este repositorio virtualmente usando GitHub Codespaces. El botón abrirá una instancia de VS Code basada en web en tu navegador:
+Puedes ejecutar este repositorio virtualmente usando GitHub Codespaces. Haz clic en uno de los botones para abrir una instancia web de VS Code en tu navegador:
 
-1. Abre el repositorio (esto puede tardar varios minutos):
+**Predeterminado (Azure OpenAI):**
 
-    [![Abrir en GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/Azure-Samples/python-ai-agent-frameworks-demos)
+[![Abrir en GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/Azure-Samples/python-ai-agent-frameworks-demos)
 
-2. Abre una ventana de terminal
-3. Continúa con los pasos para ejecutar los ejemplos
+**Ollama (modelos locales, requiere 64GB+ de memoria):**
+
+[![Abrir en GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/Azure-Samples/python-ai-agent-frameworks-demos?devcontainer_path=.devcontainer/ollama/devcontainer.json)
+
+El Codespace de Ollama pre-instala Ollama y descarga el modelo `gemma4:e4b`, y copia `.env.sample.ollama` como tu archivo `.env`. Ten en cuenta que el requisito de 64GB de memoria consumirá tu cuota de Codespace más rápido.
+
+Una vez abierto el Codespace, abre una terminal y continúa con los pasos para ejecutar los ejemplos.
 
 ### VS Code Dev Containers
 
@@ -74,15 +79,11 @@ Una opción relacionada es VS Code Dev Containers, que abrirá el proyecto en tu
 
 3. Configura un entorno virtual:
 
+3. Crea un entorno virtual e instala las dependencias:
+
     ```shell
-    python -m venv .venv
+    uv sync
     source .venv/bin/activate  # En Windows: .venv\Scripts\activate
-    ```
-
-4. Instala los requisitos:
-
-    ```shell
-    pip install -r requirements.txt
     ```
 
 ## Configurar proveedores de modelos
@@ -162,7 +163,7 @@ Este proyecto incluye infraestructura como código (IaC) para provisionar despli
     ```bash
     API_HOST=ollama
     OLLAMA_ENDPOINT=http://localhost:11434/v1
-    OLLAMA_MODEL=llama3.1
+    OLLAMA_MODEL=gemma4:e4b
     ```
 
 ## Ejecutar los ejemplos en Python

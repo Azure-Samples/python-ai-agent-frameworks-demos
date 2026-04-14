@@ -34,7 +34,7 @@ if API_HOST == "azure":
     )
 elif API_HOST == "ollama":
     Settings.llm = OpenAILike(
-        model=os.environ.get("OLLAMA_MODEL", "llama3.1"),
+        model=os.environ.get("OLLAMA_MODEL", "gemma4:e4b"),
         api_base=os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/v1"),
         api_key="none",
         is_chat_model=True,
