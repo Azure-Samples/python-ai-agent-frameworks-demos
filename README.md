@@ -232,3 +232,63 @@ You can run the examples in this repository by executing the scripts in the `exa
 * [OpenAI Agents Documentation](https://openai.github.io/openai-agents-python/)
 * [OpenAI Function Calling Documentation](https://platform.openai.com/docs/guides/function-calling?api-mode=chat)
 * [Pydantic AI Documentation](https://ai.pydantic.dev/multi-agent-applications/)
+
+## FAQ
+
+### What is this repository?
+
+This repository provides Python examples for many popular AI agent frameworks, including LangChain, LangGraph, AutoGen, CrewAI, OpenAI Agents, and PydanticAI, all configured to work with Azure OpenAI.
+
+### How do I get started quickly?
+
+The quickest way is using GitHub Codespaces, which sets up everything automatically. Alternatively, you can use VS Code Dev Containers or set up locally with Python 3.10+.
+
+### Which model providers are supported?
+
+- **Azure OpenAI** (default and recommended)
+- **OpenAI.com models** (alternative)
+- **Ollama models** (local models, requires 64GB+ memory in Codespace)
+
+### How do I configure Azure OpenAI?
+
+1. Create an Azure OpenAI resource in the Azure Portal
+2. Copy `.env.sample.azure` to `.env`
+3. Fill in your `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_API_KEY`, and deployment names
+
+### What frameworks are demonstrated?
+
+| Framework | Focus |
+|-----------|-------|
+| LangChain | General LLM application framework |
+| LangGraph | Stateful, multi-actor applications with graphs |
+| AutoGen | Multi-agent conversation framework |
+| CrewAI | Role-playing autonomous AI agents |
+| OpenAI Agents | OpenAI's official agent framework with handoffs |
+| OpenAI Function Calling | Direct function calling with LLM output |
+| PydanticAI | Type-safe agents with Pydantic models |
+
+### What are MCP (Model Context Protocol) examples?
+
+MCP examples show how to connect agent frameworks to external tools via HTTP or stdio MCP servers:
+- `openai_agents_mcp_http.py` - Travel planning with HTTP MCP
+- `pydanticai_mcp_http.py` - Hotel search with HTTP MCP
+- `pydanticai_mcp_github.py` - GitHub issue triage with MCP
+
+### How do I run a specific example?
+
+```bash
+cd examples
+python <example_name>.py
+```
+
+Each example reads from the `.env` file for configuration.
+
+### Can I use local models instead?
+
+Yes! Use the Ollama Codespace or install Ollama locally. The `.env.sample.ollama` file provides the configuration for local models.
+
+### Where can I find more help?
+
+- [Agent Framework Documentation](https://learn.microsoft.com/agent-framework/)
+- Individual framework documentation links in Resources section
+- Open an issue in this repository for questions
