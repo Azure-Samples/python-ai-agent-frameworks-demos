@@ -34,10 +34,10 @@ jobs:
       AZURE_GPT_DEPLOYMENT_CAPACITY: ${{ vars.AZURE_GPT_DEPLOYMENT_CAPACITY }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install azd
-        uses: Azure/setup-azd@v2.2.1
+        uses: Azure/setup-azd@v2.3.0
 
       - name: Install Nodejs
         uses: actions/setup-node@v6
